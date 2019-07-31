@@ -1,0 +1,4 @@
+[submodule "ibeis_lca"]
+	path = ibeis_lca
+	url = git@github.com:WildbookOrg/lca.git
+	branch = next
