@@ -1,0 +1,8 @@
+matplotlib==3.0.0
+# -e git+git@github.com:WildbookOrg/utool.git@619d86c54d450cfc9a068567d56d89e6e98c1ad1#egg=utool
+# -e git+git@github.com:WildbookOrg/ibeis.git@b3b8861061691f216023be60f37bcf8eceb9e1a6#egg=ibeis
+networkx==2.2
+numpy==1.15.2
+scipy==1.1.0
+Sphinx==1.8.1
+sphinx-rtd-theme==0.4.2
