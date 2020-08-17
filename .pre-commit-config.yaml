@@ -3,8 +3,7 @@
 exclude: |
   (?x)(
       ^docs/ |
-      ^_docs/_build/html/ |
-      wbia/web/static/
+      ^_docs/_build/html/
   )
 repos:
   # - repo: https://github.com/psf/black
@@ -29,12 +28,8 @@ repos:
     hooks:
       - id: requirements-txt-fixer
       - id: check-toml
-      # - id: check-json
+        # - id: check-json
       - id: check-yaml
-        exclude: |
-          (?x)(
-              ^wbia/detecttools/pypascalmarkup/template_.*yml
-          )
       # - id: check-ast
       - id: check-executables-have-shebangs
       # - id: check-docstring-first
