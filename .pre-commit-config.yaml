@@ -28,7 +28,7 @@ repos:
     hooks:
       - id: requirements-txt-fixer
       - id: check-toml
-        # - id: check-json
+      - id: check-json
       - id: check-yaml
       # - id: check-ast
       - id: check-executables-have-shebangs
