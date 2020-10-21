@@ -2,22 +2,9 @@
 WBIA - WildBook IA LCA Plug-in
 ==============================
 
-|Build| |Pypi| |ReadTheDocs| |Downloads|
+|Build| |Pypi| |ReadTheDocs|
 
-.. image:: http://i.imgur.com/TNCiEBe.png
-    :alt: "(Note: the rhino and wildebeest matches may be dubious. Other species do work well though")
-
-WBIA program for the storage and management of images and derived data for
-use in computer vision algorithms. It aims to compute who an animal is, what
-species an animal is, and where an animal is with the ultimate goal being to
-ask important why biological questions.
-
-This project is the Machine Learning (ML) / computer vision component of the WildBook project: See https://github.com/WildbookOrg/.  This project is an actively maintained fork of the popular IBEIS (Image Based Ecological Information System) software suite for wildlife conservation.  The original IBEIS project is maintained by Jon Crall (@Erotemic) at https://github.com/Erotemic/ibeis.  The IBEIS toolkit originally was a wrapper around HotSpotter, which original binaries can be downloaded from: http://cs.rpi.edu/hotspotter/
-
-Currently the system is build around and SQLite database, a web GUI,
-and matplotlib visualizations. Algorithms employed are: convolutional neural network
-detection and localization and classification, hessian-affine keypoint detection, SIFT keypoint
-description, LNBNN identification using approximate nearest neighbors.
+Local CLusters and their Alternatives (LCA) plug-in for WBIA - Part of the WildMe / Wildbook IA Project.
 
 Requirements
 ------------
@@ -125,6 +112,3 @@ Our code uses Google-style documentation tests (doctests) that uses pytest and x
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/wbia-lca/badge/?version=latest
     :target: http://wbia-lca.readthedocs.io/en/latest/
     :alt: Documentation on ReadTheDocs
-
-.. |Downloads| image:: https://img.shields.io/pypi/dm/wbia-lca.svg
-   :target: https://pypistats.org/packages/wbia-lca
