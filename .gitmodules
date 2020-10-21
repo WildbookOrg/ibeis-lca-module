@@ -1,4 +1,4 @@
 [submodule "wbia_lca"]
 	path = wbia_lca
-	url = git@github.com:WildbookOrg/lca.git
+	url = https://github.com/WildbookOrg/lca.git
 	branch = next
