@@ -1,0 +1,356 @@
+INFO   [         ga_driver.py:164] Building scorer and weighter for verifier vamp
+INFO   [        exp_scores.py: 62] creating exp_scores from ground truth sample distributions
+INFO   [        exp_scores.py: 66] negative positive ratio: 1.400
+INFO   [        exp_scores.py: 67] positive lambda for expoential: 4.125
+INFO   [        exp_scores.py: 68] negative lambda for expoential: 3.822
+INFO   [          weighter.py: 28] Built weighter with human_prob 0.97 and max_weight 100
+INFO   [         ga_driver.py:194] =============================================
+INFO   [         ga_driver.py:195] Start of graph algorithm overall driver which
+INFO   [         ga_driver.py:196] creates one or more graph algorithm instances.
+INFO   [         ga_driver.py:197] 2020-10-21 15:46:37
+INFO   [         ga_driver.py:198] Parameters, input and derived:
+INFO   [         ga_driver.py:200]     prob_human_correct: 0.97
+INFO   [         ga_driver.py:200]     aug_names: ['vamp', 'human']
+INFO   [         ga_driver.py:200]     min_delta_converge_multiplier: 0.95
+INFO   [         ga_driver.py:200]     min_delta_stability_ratio: 8.0
+INFO   [         ga_driver.py:200]     num_per_augmentation: 2
+INFO   [         ga_driver.py:200]     tries_before_edge_done: 4
+INFO   [         ga_driver.py:200]     ga_iterations_before_return: 10
+INFO   [         ga_driver.py:200]     ga_max_num_waiting: 50
+INFO   [         ga_driver.py:200]     log_level: 'INFO'
+INFO   [         ga_driver.py:200]     log_file: './lca.log'
+INFO   [         ga_driver.py:200]     draw_iterations: False
+INFO   [         ga_driver.py:200]     drawing_prefix: 'drawing_lca'
+INFO   [         ga_driver.py:200]     min_delta_score_converge: -190.0
+INFO   [         ga_driver.py:200]     min_delta_score_stability: -23.75
+INFO   [         ga_driver.py:210] Formed incoming graph edge quads to initiate LCA:
+INFO   [         ga_driver.py:212]    ('b', 'e', 83, vamp)
+INFO   [         ga_driver.py:212]    ('f', 'g', -96, vamp)
+INFO   [         ga_driver.py:212]    ('a', 'c', 100, human)
+INFO   [         ga_driver.py:217] Checking the following clusters using LCA: ['103']
+INFO   [         ga_driver.py:306] Formed 3 ccPIC edge and clustering pairs, having
+INFO   [         ga_driver.py:309]     7 edges involving 2 current clusters
+INFO   [         ga_driver.py:309]     7 edges involving 1 current clusters
+INFO   [         ga_driver.py:309]     3 edges involving 1 current clusters
+INFO   [   graph_algorithm.py:184] ======================================
+INFO   [   graph_algorithm.py:185] Construction of graph_algorithm object
+INFO   [   graph_algorithm.py:186] 2020-10-21 15:46:37
+INFO   [   graph_algorithm.py:195] Initial graph has 5 nodes and 5 edges
+INFO   [   graph_algorithm.py:301] Initial clusters include 2 from previous clusters, plus 2 new clusters from singletons
+INFO   [   graph_algorithm.py:303] Added 0 missing nodes to the graph
+INFO   [   graph_algorithm.py:344] Created 3 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:231] Q: <empty>
+INFO   [        lca_queues.py:246] S: 3 entries:
+INFO   [               lca.py:163]     From cids: tc000: ['a', 'b'] tc002: ['e']
+INFO   [               lca.py:163]     From cids: tc000: ['a', 'b'] tc003: ['c']
+INFO   [               lca.py:163]     From cids: tc000: ['a', 'b'] tc001: ['d']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:233] Completed graph algorithm initialization
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 1 ***
+INFO   [   graph_algorithm.py:708] LCAs 3, clusters 4, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 3, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc000: ['a', 'b'] tc003: ['c']; to: ['a', 'b', 'c']; delta 200
+INFO   [   graph_algorithm.py:377] Decision: apply LCA
+INFO   [   graph_algorithm.py:481] Removing 3 LCAs
+INFO   [   graph_algorithm.py:344] Created 2 new LCAs
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 2 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 3, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['e'] tc004: ['a', 'b', 'c']; to: ['a', 'b', 'c', 'e']; delta 166
+INFO   [   graph_algorithm.py:377] Decision: apply LCA
+INFO   [   graph_algorithm.py:481] Removing 2 LCAs
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 3 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 2, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc001: ['d'] tc005: ['a', 'b', 'c', 'e']; to: ['a', 'b', 'c', 'e'] ['d']; delta 0
+INFO   [   graph_algorithm.py:387] Decision: switch phases to splitting
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:231] Q: <empty>
+INFO   [        lca_queues.py:246] S: 1 entries:
+INFO   [               lca.py:163]     From cids: tc005: ['a', 'b', 'c', 'e']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 4 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 2, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc005: ['a', 'b', 'c', 'e']; to: ['a', 'c'] ['b', 'e']; delta -90
+INFO   [   graph_algorithm.py:400] Decision: switch phases to stability
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:235] Q: 1 entries; printing 1
+INFO   [               lca.py:178]    0: From cids: tc005: ['a', 'b', 'c', 'e']; to: ['a', 'c'] ['b', 'e']; delta -90
+INFO   [        lca_queues.py:246] S: 1 entries:
+INFO   [               lca.py:163]     From cids: tc001: ['d'] tc005: ['a', 'b', 'c', 'e']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 5 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc001: ['d'] tc005: ['a', 'b', 'c', 'e']; to: ['a', 'c'] ['b', 'd', 'e']; delta -60
+INFO   [   graph_algorithm.py:414] Decision: augment graph from top LCA
+INFO   [    weight_manager.py:129] Request edges: [('c', 'e', 'vamp'), ('d', 'e', 'vamp')]
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 6 ***
+INFO   [edge_generator_sim.py: 59] Adding hand-specified edge ('c', 'e', 66, 'vamp')
+INFO   [edge_generator_sim.py: 75] Adding auto-generated edge ('d', 'e', 50, 'vamp')
+INFO   [   graph_algorithm.py:528] Inserting edge ('c', 'e', 66)
+INFO   [   graph_algorithm.py:528] Inserting edge ('d', 'e', 50)
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 2 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc001: ['d'] tc005: ['a', 'b', 'c', 'e']; to: ['a', 'b', 'c', 'd', 'e']; delta 30
+INFO   [   graph_algorithm.py:377] Decision: apply LCA
+INFO   [   graph_algorithm.py:481] Removing 2 LCAs
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 7 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 2 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc006: ['a', 'b', 'c', 'd', 'e']; to: ['a', 'b', 'c', 'e'] ['d']; delta -30
+INFO   [   graph_algorithm.py:414] Decision: augment graph from top LCA
+INFO   [    weight_manager.py:129] Request edges: [('d', 'e', 'human'), ('c', 'd', 'vamp')]
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 8 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 2 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 0, scoring 0, waiting 1
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 9 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 2 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 0, scoring 0, waiting 1
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 10 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 2 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 0, scoring 0, waiting 1
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 11 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 2 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 0, scoring 0, waiting 1
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 12 ***
+INFO   [edge_generator_sim.py: 75] Adding auto-generated edge ('d', 'e', 100, 'human')
+INFO   [edge_generator_sim.py: 59] Adding hand-specified edge ('c', 'd', 47, 'vamp')
+INFO   [   graph_algorithm.py:528] Inserting edge ('d', 'e', 100)
+INFO   [   graph_algorithm.py:528] Inserting edge ('c', 'd', 47)
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 3 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc006: ['a', 'b', 'c', 'd', 'e']; to: ['a'] ['b', 'c', 'd', 'e']; delta -190
+INFO   [   graph_algorithm.py:442] Decision: all deltas too low and empty waiting queue W, so done
+INFO   [         ga_driver.py:358]
+INFO   [         ga_driver.py:359] *********************************
+INFO   [         ga_driver.py:360] After LCA convergence on ccPIC, here are the cluster changes:
+INFO   [         ga_driver.py:362] Change 0
+INFO   [compare_clusterings.py:109] Old clustering {'100': {'a', 'b'}, '101': {'d'}}
+INFO   [compare_clusterings.py:110] New clustering {'tc006': {'c', 'e', 'b', 'd', 'a'}}
+INFO   [compare_clusterings.py:111] Query nodes {'e', 'c'}
+INFO   [compare_clusterings.py:114] Change type 'Merge'
+INFO   [         ga_driver.py:365]
+INFO   [   graph_algorithm.py:184] ======================================
+INFO   [   graph_algorithm.py:185] Construction of graph_algorithm object
+INFO   [   graph_algorithm.py:186] 2020-10-21 15:46:37
+INFO   [   graph_algorithm.py:195] Initial graph has 5 nodes and 6 edges
+INFO   [   graph_algorithm.py:301] Initial clusters include 1 from previous clusters, plus 2 new clusters from singletons
+INFO   [   graph_algorithm.py:303] Added 0 missing nodes to the graph
+INFO   [   graph_algorithm.py:344] Created 2 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:231] Q: <empty>
+INFO   [        lca_queues.py:246] S: 2 entries:
+INFO   [               lca.py:163]     From cids: tc001: ['f'] tc002: ['g']
+INFO   [               lca.py:163]     From cids: tc000: ['h', 'i', 'j'] tc001: ['f']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:233] Completed graph algorithm initialization
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 1 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 3, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc001: ['f'] tc002: ['g']; to: ['f'] ['g']; delta 0
+INFO   [   graph_algorithm.py:387] Decision: switch phases to splitting
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:231] Q: <empty>
+INFO   [        lca_queues.py:246] S: 1 entries:
+INFO   [               lca.py:163]     From cids: tc000: ['h', 'i', 'j']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 2 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 3, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc000: ['h', 'i', 'j']; to: ['h', 'i'] ['j']; delta -310
+INFO   [   graph_algorithm.py:400] Decision: switch phases to stability
+INFO   [   graph_algorithm.py:344] Created 2 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:235] Q: 1 entries; printing 1
+INFO   [               lca.py:178]    0: From cids: tc000: ['h', 'i', 'j']; to: ['h', 'i'] ['j']; delta -310
+INFO   [        lca_queues.py:246] S: 2 entries:
+INFO   [               lca.py:163]     From cids: tc001: ['f'] tc002: ['g']
+INFO   [               lca.py:163]     From cids: tc000: ['h', 'i', 'j'] tc001: ['f']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 3 ***
+INFO   [   graph_algorithm.py:708] LCAs 3, clusters 3, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 3, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc000: ['h', 'i', 'j'] tc001: ['f']; to: ['f', 'h', 'i', 'j']; delta -100
+INFO   [   graph_algorithm.py:414] Decision: augment graph from top LCA
+INFO   [    weight_manager.py:129] Request edges: [('f', 'i', 'human'), ('f', 'j', 'vamp')]
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 4 ***
+INFO   [   graph_algorithm.py:708] LCAs 3, clusters 3, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 1
+INFO   [               lca.py:178] Top LCA: From cids: tc001: ['f'] tc002: ['g']; to: ['f', 'g']; delta -192
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 5 ***
+INFO   [   graph_algorithm.py:708] LCAs 3, clusters 3, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 1
+INFO   [               lca.py:178] Top LCA: From cids: tc001: ['f'] tc002: ['g']; to: ['f', 'g']; delta -192
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 6 ***
+INFO   [edge_generator_sim.py: 59] Adding hand-specified edge ('f', 'i', 100, 'human')
+INFO   [edge_generator_sim.py: 75] Adding auto-generated edge ('f', 'j', 14, 'vamp')
+INFO   [   graph_algorithm.py:528] Inserting edge ('f', 'i', 100)
+INFO   [   graph_algorithm.py:528] Inserting edge ('f', 'j', 14)
+INFO   [   graph_algorithm.py:708] LCAs 3, clusters 3, new edges:  vamp 1 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 3, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc000: ['h', 'i', 'j'] tc001: ['f']; to: ['f', 'h', 'i', 'j']; delta 128
+INFO   [   graph_algorithm.py:377] Decision: apply LCA
+INFO   [   graph_algorithm.py:481] Removing 3 LCAs
+INFO   [   graph_algorithm.py:344] Created 2 new LCAs
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 7 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 1 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc003: ['f', 'h', 'i', 'j']; to: ['f'] ['h', 'i', 'j']; delta -128
+INFO   [   graph_algorithm.py:414] Decision: augment graph from top LCA
+INFO   [    weight_manager.py:129] Request edges: [('f', 'i', 'human'), ('f', 'h', 'human')]
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 8 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 1 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 1
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['g'] tc003: ['f', 'h', 'i', 'j']; to: ['f', 'g', 'h', 'i', 'j']; delta -192
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 9 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 1 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 1
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['g'] tc003: ['f', 'h', 'i', 'j']; to: ['f', 'g', 'h', 'i', 'j']; delta -192
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 10 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 1 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 1
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['g'] tc003: ['f', 'h', 'i', 'j']; to: ['f', 'g', 'h', 'i', 'j']; delta -192
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 11 ***
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 1 human 1
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 1
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['g'] tc003: ['f', 'h', 'i', 'j']; to: ['f', 'g', 'h', 'i', 'j']; delta -192
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 12 ***
+INFO   [edge_generator_sim.py: 59] Adding hand-specified edge ('f', 'i', 100, 'human')
+INFO   [edge_generator_sim.py: 59] Adding hand-specified edge ('f', 'h', 100, 'human')
+INFO   [   graph_algorithm.py:528] Inserting edge ('f', 'i', 100)
+INFO   [   graph_algorithm.py:528] Inserting edge ('f', 'h', 100)
+INFO   [   graph_algorithm.py:708] LCAs 2, clusters 2, new edges:  vamp 1 human 3
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 2, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['g'] tc003: ['f', 'h', 'i', 'j']; to: ['f', 'g', 'h', 'i', 'j']; delta -192
+INFO   [   graph_algorithm.py:442] Decision: all deltas too low and empty waiting queue W, so done
+INFO   [         ga_driver.py:358]
+INFO   [         ga_driver.py:359] *********************************
+INFO   [         ga_driver.py:360] After LCA convergence on ccPIC, here are the cluster changes:
+INFO   [         ga_driver.py:362] Change 0
+INFO   [compare_clusterings.py:109] Old clustering {'102': {'i', 'h', 'j'}}
+INFO   [compare_clusterings.py:110] New clustering {'tc003': {'i', 'f', 'h', 'j'}}
+INFO   [compare_clusterings.py:111] Query nodes {'f'}
+INFO   [compare_clusterings.py:114] Change type 'Extension'
+INFO   [         ga_driver.py:362] Change 1
+INFO   [compare_clusterings.py:109] Old clustering {}
+INFO   [compare_clusterings.py:110] New clustering {'tc002': {'g'}}
+INFO   [compare_clusterings.py:111] Query nodes {'g'}
+INFO   [compare_clusterings.py:114] Change type 'New'
+INFO   [         ga_driver.py:365]
+INFO   [   graph_algorithm.py:184] ======================================
+INFO   [   graph_algorithm.py:185] Construction of graph_algorithm object
+INFO   [   graph_algorithm.py:186] 2020-10-21 15:46:37
+INFO   [   graph_algorithm.py:195] Initial graph has 3 nodes and 3 edges
+INFO   [   graph_algorithm.py:301] Initial clusters include 1 from previous clusters, plus 1 new clusters from singletons
+INFO   [   graph_algorithm.py:303] Added 0 missing nodes to the graph
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:231] Q: <empty>
+INFO   [        lca_queues.py:246] S: 1 entries:
+INFO   [               lca.py:163]     From cids: tc000: ['k', 'l'] tc001: ['m']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:233] Completed graph algorithm initialization
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 1 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 2, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc000: ['k', 'l'] tc001: ['m']; to: ['k', 'l', 'm']; delta 100
+INFO   [   graph_algorithm.py:377] Decision: apply LCA
+INFO   [   graph_algorithm.py:481] Removing 1 LCAs
+INFO   [   graph_algorithm.py:344] Created 0 new LCAs
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 2 ***
+INFO   [   graph_algorithm.py:708] LCAs 0, clusters 1, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 0, scoring 0, waiting 0
+INFO   [   graph_algorithm.py:387] Decision: switch phases to splitting
+INFO   [   graph_algorithm.py:344] Created 1 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:231] Q: <empty>
+INFO   [        lca_queues.py:246] S: 1 entries:
+INFO   [               lca.py:163]     From cids: tc002: ['k', 'l', 'm']
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 3 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['k', 'l', 'm']; to: ['k', 'm'] ['l']; delta -60
+INFO   [   graph_algorithm.py:400] Decision: switch phases to stability
+INFO   [   graph_algorithm.py:344] Created 0 new LCAs
+INFO   [        lca_queues.py:226] LCA Queues:
+INFO   [        lca_queues.py:235] Q: 1 entries; printing 1
+INFO   [               lca.py:178]    0: From cids: tc002: ['k', 'l', 'm']; to: ['k', 'm'] ['l']; delta -60
+INFO   [        lca_queues.py:244] S: <empty>
+INFO   [        lca_queues.py:252] W: <empty>
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 4 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['k', 'l', 'm']; to: ['k', 'm'] ['l']; delta -60
+INFO   [   graph_algorithm.py:414] Decision: augment graph from top LCA
+INFO   [    weight_manager.py:129] Request edges: [('l', 'm', 'human'), ('k', 'l', 'human')]
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 5 ***
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 0 human 0
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 0, scoring 0, waiting 1
+INFO   [   graph_algorithm.py:433] Decision: top LCA delta is too low, but non-empty  waiting queue, so need to pause
+INFO   [   graph_algorithm.py:355]
+INFO   [   graph_algorithm.py:356] *** Iteration 6 ***
+INFO   [edge_generator_sim.py: 59] Adding hand-specified edge ('l', 'm', 100, 'human')
+INFO   [edge_generator_sim.py: 75] Adding auto-generated edge ('k', 'l', 100, 'human')
+INFO   [   graph_algorithm.py:528] Inserting edge ('l', 'm', 100)
+INFO   [   graph_algorithm.py:528] Inserting edge ('k', 'l', 100)
+INFO   [   graph_algorithm.py:708] LCAs 1, clusters 1, new edges:  vamp 0 human 2
+INFO   [   graph_algorithm.py:714] Queue lengths: main Q 1, scoring 0, waiting 0
+INFO   [               lca.py:178] Top LCA: From cids: tc002: ['k', 'l', 'm']; to: ['k', 'l'] ['m']; delta -300
+INFO   [   graph_algorithm.py:442] Decision: all deltas too low and empty waiting queue W, so done
+INFO   [         ga_driver.py:358]
+INFO   [         ga_driver.py:359] *********************************
+INFO   [         ga_driver.py:360] After LCA convergence on ccPIC, here are the cluster changes:
+INFO   [         ga_driver.py:362] Change 0
+INFO   [compare_clusterings.py:109] Old clustering {'103': {'l', 'k'}}
+INFO   [compare_clusterings.py:110] New clustering {'tc002': {'l', 'k', 'm'}}
+INFO   [compare_clusterings.py:111] Query nodes {'m'}
+INFO   [compare_clusterings.py:114] Change type 'Extension'
+INFO   [         ga_driver.py:365]
