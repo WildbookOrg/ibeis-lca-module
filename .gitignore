@@ -6,5 +6,5 @@ profile_output*.txt
 
 *.egg-info
 __pycache__
-_doc/_build
+_docs/_build
 _page/
