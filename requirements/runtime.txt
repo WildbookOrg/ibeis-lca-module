@@ -1,8 +1,2 @@
-matplotlib==3.0.0
-networkx==2.2
-numpy==1.15.2
-scipy==1.1.0
 Sphinx==1.8.1
 sphinx-rtd-theme==0.4.2
-
-wbia-utool
