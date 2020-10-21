@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
 import sys
 from os.path import exists
 from collections import OrderedDict
@@ -163,23 +162,9 @@ NAME = 'wbia-lca'
 MB_PYTHON_TAG = native_mb_python_tag()  # NOQA
 
 AUTHORS = [
-    'Jason Parham',
-    'Dr. Jon Crall',
     'Dr. Charles Stewart',
-    'Drew Blount',
-    'Ben Scheiner',
+    'Jason Parham',
     'Wild Me Developers',
-    'Karen Chan',
-    'Michael Mulich',
-    'Hendrik Weideman',
-    'A. Batbouta',
-    'A. Beard',
-    'Z. Jablons',
-    'D. Lowe',
-    'Z. Rutfield',
-    'K. Southerland',
-    'A. Weinstock',
-    'J. Wrona',
 ]
 AUTHOR_EMAIL = 'dev@wildme.org'
 URL = 'https://github.com/WildbookOrg/wbia-plugin-lca'
