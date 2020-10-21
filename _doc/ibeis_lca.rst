@@ -1,13 +1,13 @@
-ibeis\_lca package
+wbia\_lca package
 ==================
 
 Submodules
 ----------
 
-ibeis\_lca.\_plugin module
+wbia\_lca.\_plugin module
 --------------------------
 
-.. automodule:: ibeis_lca._plugin
+.. automodule:: wbia_lca._plugin
     :members:
     :undoc-members:
     :show-inheritance:
@@ -15,7 +15,7 @@ ibeis\_lca.\_plugin module
 Module contents
 ---------------
 
-.. automodule:: ibeis_lca
+.. automodule:: wbia_lca
     :members:
     :undoc-members:
     :show-inheritance:

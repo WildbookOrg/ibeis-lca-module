@@ -8,7 +8,6 @@ import os
 os.environ['IBIES_PARSE_ARGS'] = 'OFF'
 os.environ['UTOOL_AUTOGEN_SPHINX_RUNNING'] = 'ON'
 
-# sys.path.append('~/code/ibeis_lca')
 sys.path.append(os.path.abspath('../'))
 
 autosummary_generate = True
@@ -31,7 +30,7 @@ html_theme_path = [
 
 # -- Project information -----------------------------------------------------
 
-project = 'ibeis_lca'
+project = 'wbia_lca'
 copyright = '2019, Wild Me'
 author = 'Charles Stewart, Jason Parham'
 

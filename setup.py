@@ -55,7 +55,7 @@ def native_mb_python_tag(plat_impl=None, version_info=None):
     return mb_tag
 
 
-def parse_version(fpath='ibeis_lca/__init__.py'):
+def parse_version(fpath='wbia_lca/__init__.py'):
     """
     Statically parse the version number from a python file
 
@@ -226,14 +226,14 @@ KWARGS = OrderedDict(
     # See https://github.com/pypa/setuptools_scm/ for more information
     setup_requires=['setuptools_scm'],
     use_scm_version={
-        'write_to': 'ibeis_lca/_version.py',
+        'write_to': 'wbia_lca/_version.py',
         'write_to_template': '__version__ = "{version}"',
         'tag_regex': '^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$',
         'local_scheme': 'dirty-tag',
     },
     # packages=find_packages(),
-    packages=['ibeis_lca'],
-    package_dir={'ibeis_lca': 'ibeis_lca'},
+    packages=['wbia_lca'],
+    package_dir={'wbia_lca': 'wbia_lca'},
     python_requires='>=3.5, <4',
     include_package_data=False,
     # List of classifiers available at:
@@ -269,6 +269,6 @@ KWARGS = OrderedDict(
 
 if __name__ == '__main__':
     """
-    python -c "import ibeis_lca; print(ibeis_lca.__file__)"
+    python -c "import wbia_lca; print(wbia_lca.__file__)"
     """
     setup(**KWARGS)
