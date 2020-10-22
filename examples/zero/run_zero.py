@@ -10,7 +10,8 @@ def test(fake_process):
         python wbia_lca/overall_driver.py \
             --ga_config examples/zero/config.ini \
             --verifier_gt examples/zero/verifier_probs.json \
-            --request examples/zero/request_example.json
+            --request examples/zero/request_example.json \
+            --db_result examples/zero/result.json
         """,
         shell=True,
         stdin=subprocess.PIPE,
