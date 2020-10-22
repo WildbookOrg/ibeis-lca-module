@@ -9,12 +9,6 @@ from skbuild import setup
 
 
 def native_mb_python_tag(plat_impl=None, version_info=None):
-    """
-    Example:
-        >>> print(native_mb_python_tag())
-        >>> print(native_mb_python_tag('PyPy', (2, 7)))
-        >>> print(native_mb_python_tag('CPython', (3, 8)))
-    """
     if plat_impl is None:
         import platform
 
@@ -93,9 +87,6 @@ def parse_requirements(fname='requirements.txt'):
     """
     Parse the package dependencies listed in a requirements file but
     strips specific versioning information.
-
-    CommandLine:
-        python -c "import setup; print(setup.parse_requirements())"
     """
     import re
 
@@ -253,7 +244,4 @@ KWARGS = OrderedDict(
 )
 
 if __name__ == '__main__':
-    """
-    python -c "import wbia_lca; print(wbia_lca.__file__)"
-    """
     setup(**KWARGS)

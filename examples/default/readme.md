@@ -41,10 +41,10 @@ be indicative of the expected distribution of examples, but in terms
 of the scores (probs) and the relative frquency of positive and
 negative examples.
 
-## default_confi.ini
+## confi.ini
 
 There are no significant changes here.
 
 ##  Command-line
 
-python ../overall_driver.py --ga_config default_config.ini --verifier_gt verifier_probs.json --request request_example.json
+python ../overall_driver.py --ga_config config.ini --verifier_gt verifier_probs.json --request request_example.json

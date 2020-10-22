@@ -36,4 +36,4 @@ verification.
 
 ##  Command-line
 
-python ../overall_driver.py --ga_config default_config.ini --verifier_gt verifier_probs.json --request request_example.json
+python ../overall_driver.py --ga_config config.ini --verifier_gt verifier_probs.json --request request_example.json

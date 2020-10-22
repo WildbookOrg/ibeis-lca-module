@@ -8,3 +8,5 @@ profile_output*.txt
 __pycache__
 _docs/_build
 _page/
+
+test_*.png
