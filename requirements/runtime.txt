@@ -1,2 +1,10 @@
+matplotlib
+networkx
+numpy
+scipy
+
 Sphinx
 sphinx-rtd-theme
+wbia-utool
+
+wildbook-ia
