@@ -10,3 +10,4 @@ _docs/_build
 _page/
 
 test_*.png
+*.log

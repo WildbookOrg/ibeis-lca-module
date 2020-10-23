@@ -10,6 +10,7 @@ rm -rf *.egg-info
 rm -rf test*.png
 rm -rf wbia_lca/test*.png
 
+rm -rf *.log
 rm -rf examples/*/lca.log
 
 rm -rf _docs/_build/
