@@ -49,4 +49,8 @@ There are no significant changes here.
 
 ##  Command-line
 
-python ../overall_driver.py --ga_config config.ini --verifier_gt verifier_probs.json --request request_example.json
+python wbia_lca/overall_driver.py \
+    --ga_config examples/merge/config.ini \
+    --verifier_gt examples/merge/verifier_probs.json \
+    --request examples/merge/request_example.json \
+    --db_result examples/merge/result.json
