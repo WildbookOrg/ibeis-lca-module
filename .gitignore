@@ -12,4 +12,4 @@ _page/
 test_*.png
 *.log
 
-reviews.csv
+lca.decisions.csv
