@@ -101,8 +101,8 @@ Our code uses Google-style documentation tests (doctests) that uses pytest and x
 
     pytest
 
-.. |Build| image:: https://img.shields.io/github/workflow/status/WildMeOrg/wbia-lca/Build%20and%20upload%20to%20PyPI/main
-    :target: https://github.com/WildMeOrg/wbia-lca/actions?query=branch%3Amain+workflow%3A%22Build+and+upload+to+PyPI%22
+.. |Build| image:: https://img.shields.io/github/workflow/status/WildMeOrg/wbia-plugin-lca/Build%20and%20upload%20to%20PyPI/main
+    :target: https://github.com/WildMeOrg/wbia-plugin-lca/actions?query=branch%3Amain+workflow%3A%22Build+and+upload+to+PyPI%22
     :alt: Build and upload to PyPI (main)
 
 .. |Pypi| image:: https://img.shields.io/pypi/v/wbia-lca.svg
