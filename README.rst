@@ -109,6 +109,6 @@ Our code uses Google-style documentation tests (doctests) that uses pytest and x
    :target: https://pypi.python.org/pypi/wbia-lca
    :alt: Latest PyPI version
 
-.. |ReadTheDocs| image:: https://readthedocs.org/projects/wbia-lca/badge/?version=latest
+.. |ReadTheDocs| image:: https://readthedocs.org/projects/wbia-plugin-lca/badge/?version=latest
     :target: https://wbia-plugin-lca.readthedocs.io/en/latest/
     :alt: Documentation on ReadTheDocs
