@@ -1,4 +1,0 @@
-[submodule "wbia_lca"]
-	path = wbia_lca
-	url = https://github.com/WildbookOrg/lca.git
-	branch = develop

@@ -1,0 +1,9 @@
+version.py
+
+.DS_Store
+__pycache__/
+
+example/lca.log
+_version.py
+
+test*.png
