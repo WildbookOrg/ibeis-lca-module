@@ -222,7 +222,11 @@ class ga_driver(object):  # NOQA
         for k, v in ga_params.items():
             logger.info('    %s: %a' % (k, v))
 
-        assert len(verifier_results) > 0 or len(human_decisions) > 0
+        assert (
+            len(verifier_results) > 0
+            or len(human_decisions) > 0
+            or len(cluster_ids_to_check) > 0
+        )
         self.db = db
         self.edge_gen = edge_gen
         self.ga_params = ga_params
@@ -324,6 +328,7 @@ class ga_driver(object):  # NOQA
     def form_ccPICs(self):
         self.ccPICs = []
         cid_graph = nx.Graph()
+        cid_graph.add_nodes_from(self.direct_cids)
         cid_graph.add_edges_from(self.cid_pairs)
         for cc in nx.connected_components(cid_graph):
             cids = list(cc)
