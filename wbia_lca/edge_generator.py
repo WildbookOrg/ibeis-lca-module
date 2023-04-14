@@ -9,11 +9,9 @@ logger = logging.getLogger('wbia_lca')
 
 
 class edge_generator(object):  # NOQA
-    def __init__(self, db, wgtr, controller=None):
+    def __init__(self, db, wgtr):
         self.db = db
         self.wgtr = wgtr
-
-        self.controller = controller
 
         self.edge_requests = []  # triples (n0, n1, aug_name)
         self.edge_results = []  # quads (n0, n1, w, aug_name)
