@@ -13,9 +13,15 @@ Here, n0 and n1 are the nodes, w is the (signed!) weight and aug_name
 is the augmentation method --- a verification algorithm or a human
 annotator -- that produced the edge.  Importantly, n0 < n1.
 
-As currently written, nodes are not added to the database through this
-interface. It is assumed that these are entered using a separate
-interface that runs before the graph algorithm.
+X As currently written, nodes are not added to the database through this
+X interface. It is assumed that these are entered using a separate
+X interface that runs before the graph algorithm.
+
+Nodes are generally added implicitly through adding edges, but as a
+safety precaution all nodes in the clustering also added. This will
+only add nodes that are disconnected from others in graph; such nodes
+do not participate in the graph algorithm and are only recorded here
+to avoid errors.
 
 I suspect we can implement this as a class hierarchy where examples and
 simulation are handled through one subclass and the true database
@@ -31,25 +37,25 @@ logger = logging.getLogger('wbia_lca')
 
 
 class db_interface(object):  # NOQA
-    def __init__(self, edges, clustering):
+    def __init__(self, edges, clustering, are_edges_new=True):
         super(db_interface, self).__init__()
 
         self.edge_graph = nx.Graph()
-        self.add_edges(edges)
-
+        self.add_edges(edges, are_edges_new)
         self.clustering = clustering
         self.node_to_cid = ct.build_node_to_cluster_mapping(self.clustering)
 
-    def add_edges(self, quads):
+        # Add any nodes that don't have edges.
+        self.edge_graph.add_nodes_from(list(self.node_to_cid.keys()))
+
+    def add_edges(self, quads, are_edges_new=True):
         """
-        Add edges of the form (n0, n1, w, aug_name). This can be a
-        single quad or a list of quads. For each, if the combination of
-        n0, n1 and aug_name already exists and aug_name is not 'human'
-        then the new edge replaces the existing edge. Otherwise, this
-        edge quad is added as though the graph is a multi-graph.
+        Add edges to the nx.Graph and, if the edges are new, to the
+        underlying database.
         """
         self.edge_graph.add_edges_from([(n0, n1) for n0, n1, _, _ in quads])
-        return self.add_edges_db(quads)
+        if are_edges_new:
+            self.add_edges_db(quads)
 
     # def get_weight(self, triple):
     #     """
@@ -176,27 +182,27 @@ class db_interface(object):  # NOQA
     def commit_cluster_change(self, cc):
         """
         Commit the changes according to the type of change.  See
-        compare_clusterings.py
+        compare_clusterings.py  Nothing is done here if there is
+        no change, but there may need to be something done to the
+        main WBIA database.
         """
-        if cc.change_type == 'Unchanged':
-            return
+        if cc.change_type != 'Unchanged':
+            # 1. Add new clusters
+            self.clustering.update(cc.new_clustering)
 
-        # 1. Add new clusters
-        self.clustering.update(cc.new_clustering)
+            # 2. Remove old clusters
+            removed_cids = set(cc.old_clustering.keys()) - set(cc.new_clustering.keys())
+            for old_c in removed_cids:
+                del self.clustering[old_c]
 
-        # 2. Remove old clusters
-        removed_cids = set(cc.old_clustering.keys()) - set(cc.new_clustering.keys())
-        for old_c in removed_cids:
-            del self.clustering[old_c]
+            # 3. Update the node to clusterid mapping
+            new_node_to_cid = ct.build_node_to_cluster_mapping(cc.new_clustering)
+            self.node_to_cid.update(new_node_to_cid)
 
-        # 3. Update the node to clusterid mapping
-        new_node_to_cid = ct.build_node_to_cluster_mapping(cc.new_clustering)
-        self.node_to_cid.update(new_node_to_cid)
-
-        # 4. Removed nodes should have already been removed from the
-        #    db through the call to self.remove_nodes.
-        for n in cc.removed_nodes:
-            assert n not in self.node_to_cid
+            # 4. Removed nodes should have already been removed from the
+            #    db through the call to self.remove_nodes.
+            for n in cc.removed_nodes:
+                assert n not in self.node_to_cid
 
         return self.commit_cluster_change_db(cc)
 
