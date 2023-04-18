@@ -487,7 +487,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         """
         if evidence_decision is None:
             decision = UNREV
-        else;
+        else:
             decision = evidence_decision
 
         logger.info(f'db add_feedback: edge {edge}, decision {decision}')
@@ -721,7 +721,6 @@ class LCAActor(GraphActor):
         import wbia
 
         # Moved these down here because they aren't often changed.
-        # fmt: off
         actor.infr_config = {
             # 'manual.n_peek': 100,
             'inference.enabled': True,
@@ -738,10 +737,9 @@ class LCAActor(GraphActor):
             'refresh.thresh': np.exp(-2),
             'algo.hardcase': False,
         }
-        # fmt: on
 
-        assert dbdir is not None, 'must specify dbdir'
-        assert actor.infr is None, 'AnnotInference already running'
+        assert dbdir is not None
+        assert actor.infr is None
         ibs = wbia.opendb(dbdir=dbdir, use_cache=False, web=False, force_serial=True)
 
         # Create the reference AnnotInference
@@ -756,7 +754,7 @@ class LCAActor(GraphActor):
 
         actor.infr.print('infr.status() = {}'.format(ut.repr4(actor.infr.status())))
 
-        # Load Verifier models for Verifier
+        # Load models for verifier
         actor.infr.print('loading published models')
         actor.infr.load_published()
 
