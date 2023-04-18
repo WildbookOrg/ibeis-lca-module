@@ -3,7 +3,6 @@ from wbia.control import controller_inject
 from wbia import constants as const
 from wbia.web.graph_server import GraphClient, GraphActor
 from wbia.algo.graph.state import POSTV, NEGTV, INCMP, UNREV, UNKWN, NULL
-from wbia.algo.graph.core import _rectify_decision
 
 import numpy as np
 import os
@@ -48,10 +47,10 @@ ALGO_IDENTITY_PREFIX = '%s:' % (ALGO_IDENTITY.split(':')[0],)
 
 HUMAN_CORRECT_RATE = 0.98
 
-# USE_SIMREVIEW = ut.get_argflag('--lca-simreview')  # or USE_COLDSTART
-
 # LOG_DECISION_FILE = 'lca.decisions.csv'
 LOG_LCA_FILE = 'lca.log'
+
+OVERALL_CONFIG_FILE = 'lca_plugin_overall.cfg'
 
 """
 Need to be careful of types and values. Review feedback coming from
@@ -68,225 +67,11 @@ UNKNOWN = const.EVIDENCE_DECISION.UNKNOWN
 DECISION_TYPES = [NEGATIVE, POSITIVE]  # eventually, INCOMPARABLE
 
 
-@register_ibs_method
-@register_api('/api/plugin/lca/sim/', methods=['GET'])
-def wbia_plugin_lca_sim(ibs, ga_config, verifier_gt, request, db_result=None):
-    r"""
-    Create an LCA graph algorithm object and run a simulator
-
-    Args:
-        ibs (IBEISController): wbia controller object
-        ga_config (str): graph algorithm config INI file
-        verifier_gt (str): json file containing verification algorithm ground truth
-        request (str): json file continain graph algorithm request info
-        db_result (str, optional): file to write resulting json database
-
-    Returns:
-        object: changes_to_review
-
-    CommandLine:
-        python -m wbia_lca._plugin wbia_plugin_lca_sim
-        python -m wbia_lca._plugin wbia_plugin_lca_sim:0
-        python -m wbia_lca._plugin wbia_plugin_lca_sim:1
-        python -m wbia_lca._plugin wbia_plugin_lca_sim:2
-
-    RESTful:
-        Method: GET
-        URL:    /api/plugin/lca/sim/
-
-    Doctest:
-        >>> # ENABLE_DOCTEST
-        >>> import wbia
-        >>> import utool as ut
-        >>> import random
-        >>> random.seed(1)
-        >>> from wbia.init import sysres
-        >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = wbia.opendb(dbdir=dbdir)
-        >>> ga_config = 'examples/default/config.ini'
-        >>> verifier_gt = 'examples/default/verifier_probs.json'
-        >>> request = 'examples/default/request_example.json'
-        >>> db_result = 'examples/default/result.json'
-        >>> changes_to_review = ibs.wbia_plugin_lca_sim(ga_config, verifier_gt, request, db_result)
-        >>> results = []
-        >>> for cluster in changes_to_review:
-        >>>     lines = []
-        >>>     for change in cluster:
-        >>>         line = []
-        >>>         line.append('query nodes %s' % (sorted(change.query_nodes),))
-        >>>         line.append('change_type %s' % (change.change_type,))
-        >>>         line.append('old_clustering %s' % (sorted(change.old_clustering), ))
-        >>>         line.append('len(new_clustering) %s' % (len(sorted(change.new_clustering)), ))
-        >>>         line.append('removed_nodes %s' % (sorted(change.removed_nodes),))
-        >>>         lines.append('\n'.join(line))
-        >>>     results.append('\n-\n'.join(sorted(lines)))
-        >>> result = '\n----\n'.join(sorted(results))
-        >>> print('----\n%s\n----' % (result, ))
-        ----
-        query nodes ['c', 'e']
-        change_type Merge
-        old_clustering ['100', '101']
-        len(new_clustering) 1
-        removed_nodes []
-        ----
-        query nodes ['f']
-        change_type Extension
-        old_clustering ['102']
-        len(new_clustering) 1
-        removed_nodes []
-        -
-        query nodes ['g']
-        change_type New
-        old_clustering []
-        len(new_clustering) 1
-        removed_nodes []
-        ----
-        query nodes ['m']
-        change_type Extension
-        old_clustering ['103']
-        len(new_clustering) 1
-        removed_nodes []
-        ----
-
-    Doctest:
-        >>> # ENABLE_DOCTEST
-        >>> import wbia
-        >>> import utool as ut
-        >>> import random
-        >>> random.seed(1)
-        >>> from wbia.init import sysres
-        >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = wbia.opendb(dbdir=dbdir)
-        >>> ga_config = 'examples/merge/config.ini'
-        >>> verifier_gt = 'examples/merge/verifier_probs.json'
-        >>> request = 'examples/merge/request_example.json'
-        >>> db_result = 'examples/merge/result.json'
-        >>> changes_to_review = ibs.wbia_plugin_lca_sim(ga_config, verifier_gt, request, db_result)
-        >>> results = []
-        >>> for cluster in changes_to_review:
-        >>>     lines = []
-        >>>     for change in cluster:
-        >>>         line = []
-        >>>         line.append('query nodes %s' % (sorted(change.query_nodes),))
-        >>>         line.append('change_type %s' % (change.change_type,))
-        >>>         line.append('old_clustering %s' % (sorted(change.old_clustering), ))
-        >>>         line.append('len(new_clustering) %s' % (len(sorted(change.new_clustering)), ))
-        >>>         line.append('removed_nodes %s' % (sorted(change.removed_nodes),))
-        >>>         lines.append('\n'.join(line))
-        >>>     results.append('\n-\n'.join(sorted(lines)))
-        >>> result = '\n----\n'.join(sorted(results))
-        >>> print('----\n%s\n----' % (result, ))
-        ----
-        query nodes []
-        change_type Merge/Split
-        old_clustering ['100', '101']
-        len(new_clustering) 2
-        removed_nodes []
-        -
-        query nodes []
-        change_type Unchanged
-        old_clustering ['102']
-        len(new_clustering) 1
-        removed_nodes []
-        ----
-
-    Doctest:
-        >>> # ENABLE_DOCTEST
-        >>> import wbia
-        >>> import utool as ut
-        >>> import random
-        >>> random.seed(1)
-        >>> from wbia.init import sysres
-        >>> dbdir = sysres.ensure_testdb_identification_example()
-        >>> ibs = wbia.opendb(dbdir=dbdir)
-        >>> ga_config = 'examples/zero/config.ini'
-        >>> verifier_gt = 'examples/zero/verifier_probs.json'
-        >>> request = 'examples/zero/request_example.json'
-        >>> db_result = 'examples/zero/result.json'
-        >>> changes_to_review = ibs.wbia_plugin_lca_sim(ga_config, verifier_gt, request, db_result)
-        >>> results = []
-        >>> for cluster in changes_to_review:
-        >>>     lines = []
-        >>>     for change in cluster:
-        >>>         line = []
-        >>>         line.append('query nodes %s' % (sorted(change.query_nodes),))
-        >>>         line.append('change_type %s' % (change.change_type,))
-        >>>         line.append('old_clustering %s' % (sorted(change.old_clustering), ))
-        >>>         line.append('len(new_clustering) %s' % (len(sorted(change.new_clustering)), ))
-        >>>         line.append('removed_nodes %s' % (sorted(change.removed_nodes),))
-        >>>         lines.append('\n'.join(line))
-        >>>     results.append('\n-\n'.join(sorted(lines)))
-        >>> result = '\n----\n'.join(sorted(results))
-        >>> print('----\n%s\n----' % (result, ))
-        ----
-        query nodes ['a', 'b', 'c', 'd', 'e']
-        change_type New
-        old_clustering []
-        len(new_clustering) 1
-        removed_nodes []
-        -
-        query nodes ['f', 'h', 'i', 'j']
-        change_type New
-        old_clustering []
-        len(new_clustering) 1
-        removed_nodes []
-        -
-        query nodes ['g']
-        change_type New
-        old_clustering []
-        len(new_clustering) 1
-        removed_nodes []
-        -
-        query nodes ['k', 'l', 'm']
-        change_type New
-        old_clustering []
-        len(new_clustering) 1
-        removed_nodes []
-        ----
-    """
-    # 1. Configuration
-    config_ini = configparser.ConfigParser()
-    config_ini.read(ga_config)
-
-    # 2. Recent results from verification ground truth tests. Used to
-    # establish the weighter.
-    with open(verifier_gt, 'r') as fn:
-        verifier_gt = json.loads(fn.read())
-
-    # 3. Form the parameters dictionary and weight objects (one per
-    # verification algorithm).
-    lca_config, wgtrs = ga_driver.params_and_weighters(config_ini, verifier_gt)
-    if len(wgtrs) > 1:
-        logger.info('Not currently handling more than one weighter!!')
-        sys.exit(1)
-    wgtr = wgtrs[0]
-
-    # 4. Get the request dictionary, which includes the database, the
-    # actual request edges and clusters, and the edge generator edges
-    # and ground truth (for simulation).
-    with open(request, 'r') as fn:
-        request = json.loads(fn.read())
-
-    db = overall_driver.form_database(request)
-    edge_gen = overall_driver.form_edge_generator(request, db, wgtr)
-    verifier_req, human_req, cluster_req = overall_driver.extract_requests(request, db)
-
-    # 5. Form the graph algorithm driver
-    driver = ga_driver.ga_driver(
-        verifier_req, human_req, cluster_req, db, edge_gen, lca_config
-    )
-
-    # 6. Run it. Changes are logged.
-    ccPIC_gen = driver.run_all_ccPICs()
-    changes_to_review = list(ccPIC_gen)
-    logger.info(changes_to_review)
-
-    # 7. Commit changes. Record them in the database and the log
-    # file.
-    # TBD
-
-    return changes_to_review
-
+"""
+First we have convenience functions for interpretting what comes
+back from the web UI and for converting back and forth between WBIA
+naming conventions and LCA naming conventions.
+"""
 
 def is_aug_name_human(aug_name):
     return aug_name == HUMAN_AUG_NAME
@@ -377,13 +162,21 @@ def progress_db(actor, gai, iter_num):
 
 
 class db_interface_wbia(db_interface.db_interface):  # NOQA
+    """
+    Provide the interface between WBIA and LCA for edges and clusters.
+    """
     def __init__(self, actor):
+        """
+        Pull out the current edge weights and clustering from WBIA
+        and prepare them for LCA. Communicate them to LCA via the
+        super class initializer        
+        """
         self.controller = actor
         self.infr = actor.infr
         self.ibs = actor.infr.ibs
 
         """
-        CHECK ME: make sure this is handled consistently
+        CHECK ME: I believe this is no longer needed.
         """
         self.max_auto_reviews = 1
         self.max_human_reviews = 10
@@ -392,8 +185,8 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
         # Get the current clustering based on the WBIA database of names
         clustering = self._get_existing_clustering()
 
-        #  Get the current edge weights and form them as quads for addition
-        #  to LCA's db.
+        #  Get the current edge weights and form them as quads for construction
+        #  of LCA's db.
         ibs = self.ibs
         aids = self.infr.aids
         edge_wgt_rowids = ibs.get_edge_weight_rowids_between(aids)
@@ -416,6 +209,10 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
         super(db_interface_wbia, self).__init__(quads, clustering, are_edges_new=False)
 
     def _get_existing_clustering(self):
+        """
+        Access the current clustering in the WBIA database and convert it
+        to LCA's form.
+        """
         aids = self.infr.aids
         nids = self.ibs.get_annot_nids(aids)
         clustering = dict()
@@ -426,14 +223,19 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
                 clustering[cluster_label_] = []
             clustering[cluster_label_].append(cluster_node_)
 
-        logger.info(f'At start, clustering has {len(clustering)} names')
-        for nid in sorted(clustering.keys()):
+        logger.info(f'At start, clustering has {len(clustering)} names. Here are the first few')
+        for nid in sorted(clustering.keys())[:25]:
             clustering[nid] = sorted(clustering[nid])
             logger.info(f'\tcluster NID {nid}: {clustering[nid]}')
 
         return clustering
 
     def _cleanup_edges(self, max_auto=None, max_human=None):
+        """
+        I'm pretty sure this procedure to remove edge weights
+        that are beyond the maximum allowed is no longer needed.
+        I have commented out its single call in the following function.
+        """
         weight_rowid_list = self.ibs.get_edge_weight_rowids_between(self.infr.aids)
         if max_auto is None:
             max_auto = self.max_auto_reviews
@@ -450,6 +252,10 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
         )
 
     def add_edges_db(self, quads):
+        """
+        Add edges in the form of LCA quads to the WBIA edge_weight database.
+        This requires format conversion before the addition.
+        """
         aid_1_list = list(
             map(convert_lca_node_id_to_wbia_annot_id, ut.take_column(quads, 0))
         )
@@ -463,39 +269,38 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
         weight_rowid_list = self.ibs.add_edge_weight(
             aid_1_list, aid_2_list, value_list, identity_list
         )
-        self._cleanup_edges()
+        # self._cleanup_edges()
         return weight_rowid_list
 
     def edges_from_attributes_db(self, n0, n1):
-        n0_ = convert_lca_node_id_to_wbia_annot_id(n0)
-        n1_ = convert_lca_node_id_to_wbia_annot_id(n1)
-        edges = [(n0_, n1_)]
+        """
+        Get all edge weights associated with the LCA node pair n0 and n1.
+        This requires converting from LCA node ids to WBIA aids.
+        """
+        a1, = convert_lca_node_id_to_wbia_annot_id(n0)
+        a2 = convert_lca_node_id_to_wbia_annot_id(n1)
+        edges = [(a1, a2)]
         weight_rowid_list = self.ibs.get_edge_weight_rowids_from_edges(edges)
         weight_rowid_list = weight_rowid_list[0]
         weight_rowid_list = sorted(weight_rowid_list)
 
-        aid_1_list = [n0] * len(weight_rowid_list)
-        aid_2_list = [n1] * len(weight_rowid_list)
+        node_0_list = [n0] * len(weight_rowid_list)
+        node_1_list = [n1] * len(weight_rowid_list)
         value_list = self.ibs.get_edge_weight_value(weight_rowid_list)
         identity_list = self.ibs.get_edge_weight_identity(weight_rowid_list)
         aug_name_list = convert_identity_to_aug_name(identity_list)
 
-        quads = list(zip(aid_1_list, aid_2_list, value_list, aug_name_list))
-
-        num_auto = aug_name_list.count(ALGO_AUG_NAME)
-        num_human = aug_name_list.count(HUMAN_AUG_NAME)
-        assert num_auto <= self.max_auto_reviews
-        assert num_human <= self.max_human_reviews
-        assert len(quads) <= self.max_reviews
+        quads = list(zip(node_0_list, node_1_list, value_list, aug_name_list))
 
         return quads
 
     def commit_cluster_change_db(self, cc):
         """
-        Two jobs: (1) create a change dictionary with WBIA names, and
-        (2) save clusters as WBIA names. The latter adds NIDs if they didn't
-        exist before and removes NIDs that have changed more than just as
-        the addition of query annotations. This will require REVISITING
+        Commit a cluster change. Such a change is a minimal set of interdependent
+        changes.  There are two particular jobs: (1) create a change dictionary
+        with WBIA names, and (2) save clusters as WBIA names. The latter adds
+        NIDs if they didn't exist before and removes NIDs that have changed more
+        than just as the addition of query annotations. This will require REVISITING
         because it makes no effort to preserve metadata that is associated
         with names that have been removed.
         """
@@ -588,11 +393,26 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
 
 
 class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
+    """
+    Subclass of LCA edge_generator for WBIA-specific creation of edges
+    Its most important job is to manage the request for augmentations, 
+    dividing this into verification requests that can handled immediately,
+    and human review requests that must be queued up for review and then
+    gathered (through the feedback method). The requests are kept internally
+    in their LCA form
+    """
     def __init__(self, db, wgtr, controller):
+        """
+        db and wgtr are LCA object
+        The controller is needed for access to the pluging functionality.
+        """
         self.controller = controller
         super(edge_generator_wbia, self).__init__(db, wgtr)
 
     def _cleanup_edges(self):
+        """
+        99.9% sure this isn't needed.
+        """
         clean_edge_requests = []
         logger.info(f'_cleanup_edges, edge_requests are {self.edge_requests}')
         for edge in self.edge_requests:
@@ -612,15 +432,23 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         return self.edge_requests
 
     def set_edge_requests(self, new_edge_requests):
+        """
+        Assign the edge requests. Note that this is a replacement, not an append.
+        """
         self.edge_requests = new_edge_requests
         self._cleanup_edges()
         return self.edge_requests
 
     def edge_request_cb_async(self):
         actor = self.controller
-
-        requested_verifier_edges = []
-        keep_edge_requests = []
+        """
+        Called from LCA through super class method to handle augmentation requests.
+        Requests for verification probability edges are handle immediately and saved
+        as results for LCA to grab. Requests for human reviews are saved for sending
+        to the web interface
+        """
+        requested_verifier_edges = []  # Requests for verifier
+        human_review_requests = []        # Requests for human review 
         for edge in self.get_edge_requests():
             n0, n1, aug_name = edge
             if is_aug_name_algo(aug_name):
@@ -628,11 +456,10 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
                 aid2 = convert_lca_node_id_to_wbia_annot_id(n1)
                 requested_verifier_edges.append((aid1, aid2))
             else:
-                keep_edge_requests.append(edge)
+                human_review_requests.append(edge)
 
-        probs = actor._candidate_edge_probs(
-            requested_verifier_edges
-        )  # , update_infr=True
+        probs = actor._candidate_edge_probs(requested_verifier_edges)
+
         zipped = (requested_verifier_edges, probs)
         self.edge_results += [
             (
@@ -643,55 +470,44 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
             )
             for e, p in zip(requested_verifier_edges, probs)
         ]
-        self.set_edge_requests(keep_edge_requests)
+        self.set_edge_requests(human_review_requests)
 
         logger.info(f'Added {len(probs)} verifier edge probs')
-        logger.info(f'Kept {len(keep_edge_requests)} requests for human review')
+        logger.info(f'Kept {len(human_review_requests)} requests for human review')
 
     def add_feedback(
         self,
         edge,
         evidence_decision=None,
-        tags=None,
-        user_id=None,
-        meta_decision=None,
-        confidence=None,
-        timestamp_c1=None,
-        timestamp_c2=None,
-        timestamp_s1=None,
-        timestamp=None,
-        verbose=None,
-        priority=None,
+        **kwargs
     ):
-        aid1, aid2 = edge
-
+        """
+        This function is called when human reviews are given for edges
+        requested by LCA.
+        """
         if evidence_decision is None:
-            evidence_decision = UNREV
-        if meta_decision is None:
-            meta_decision = const.META_DECISION.CODE.NULL
-        decision = _rectify_decision(evidence_decision, meta_decision)
+            decision = UNREV
+        else;
+            decision = evidence_decision
 
         logger.info(f'db add_feedback: edge {edge}, decision {decision}')
         assert isinstance(decision, str)
 
         if decision == POSTV:
-            decision_int = POSITIVE
             flag = True
         elif decision == NEGTV:
-            decision_int = NEGATIVE
             flag = False
         elif decision == INCMP:
-            decision_int = INCOMPARABLE
             flag = None
         else:
             # UNREV, UNKWN
             return
-        logger.info(f'db add_feedback: decision_int is {decision_int}')
 
         """
         Task 1: Provide the new edge to LCA, which will grab it as 
         part of the next iteration.
         """
+        aid1, aid2 = edge
         n0 = convert_wbia_annot_id_to_lca_node_id(aid1)
         n1 = convert_wbia_annot_id_to_lca_node_id(aid2)
         human_triples = [
@@ -736,12 +552,6 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         if len(to_remove) > 0:
             ibs.delete_review(to_remove)
 
-        """
-        Task 4: Record this review in the WBIA database
-        Maybe not.  I think it is already there.
-        """
-        #  ibs.add_review([aid1], [aid2], [decision_int], identity_list=[HUMAN_IDENTITY])
-
 
 def filter_prob_outliers(probs):
     m = np.mean(probs)
@@ -754,65 +564,62 @@ def filter_prob_outliers(probs):
 
 class LCAActor(GraphActor):
     """
-
-    CommandLine:
-        python -m wbia_lca._plugin LCAActor
-        python -m wbia_lca._plugin LCAActor:0
-
-    Doctest:
-        >>> from wbia.web.graph_server import _testdata_feedback_payload
-        >>> import wbia
-        >>> actor = LCAActor()
-        >>> # Start the process
-        >>> # dbdir = wbia.sysres.db_to_dbdir('GZ_CensusAnnotation_Eval')
-        >>> dbdir = wbia.sysres.db_to_dbdir('PZ_MTEST', allow_newdir=True)
-        >>> payload = {'action': 'start', 'dbdir': dbdir, 'aids': 'all'}
-        >>> start_resp = actor.handle(payload)
-        >>> print('start_resp = {!r}'.format(start_resp))
-        >>> # Respond with a user decision
-        >>> user_request = actor.handle({'action': 'resume'})
-        >>> # Wait for a response and the LCAActor in another proc
-        >>> if len(user_request) > 0:
-        >>>     edge, priority, edge_data = user_request[0]
-        >>>     user_resp_payload = _testdata_feedback_payload(edge, 'match')
-        >>>     content = actor.handle(user_resp_payload)
+    The main plugin class.
     """
 
     def __init__(
         actor, *args, ranker='hotspotter', verifier='vamp', num_waiting=10, **kwargs
     ):
+        """
+        The init function is a bit of mess and needs more abstraction.
+        """
+
+        # The inference object for the Hotspotter (LNBNN) and VAMP
         actor.infr = None
         actor.graph_uuid = None
 
+        """
+        Attribute variables for sending to LCA's ga_driver function
+        """
         actor.db = None
         actor.edge_gen = None
         actor.driver = None
         actor.ga_gen = None
         actor.changes = None
-
-        actor.LCA_calib_reviews_are_from_file = False
-        actor.has_LCA_calib = False
-
-        actor.probs_for_review_edges = (
-            None  # Dict mapping WBIA candidate edge to verifier prob
-        )
-        actor.before_review_for_LCA_calib = (
-            None  # Edge pairs before adding to the review interface
-        )
-        actor.in_review_for_LCA_calib = (
-            None  # Edge pairs currently in the review interface
-        )
-
-        actor.reviews_for_LCA_calib = (
-            None  # Dict of reviewed edge probs for weighter calib
-        )
         actor.new_verifier_quads = None  # Verifier prob edges that are new to LCA
         actor.new_human_review_triples = None  # Human review triples that are new to LCA
 
-        actor.failed_to_open_gt_clusters_filepath = False
-        actor.gt_aid_clusters = None  # GT mapping from aid to cluster id for simulation
+        # The following is marked True if the review probabilities come from a file
+        # This should only be False after starting up a new collection of reviews
+        # for calications
+        actor.LCA_calib_reviews_are_from_file = False
 
+        # Set to True after LCA's weighter has been calibrated
+        actor.has_LCA_calib = False
+
+        # Dict mapping WBIA candidate edges to verifier prob. Always computed
+        actor.probs_for_review_edges = None
+
+        # Edge pairs before adding to the web-based human review interface
+        actor.before_review_for_LCA_calib = None
+
+        # Edges pairs currently in the review interface
+        actor.in_review_for_LCA_calib = None
+
+        # Dictionary of verifier probabilities for human-review edges
+        actor.reviews_for_LCA_calib = None
+
+        # Set to True if tried to open pkl file of ground truth clusters and failed. 
+        actor.failed_to_open_gt_clusters_filepath = False
+
+        # Ground truth mapping from WBIA aid to cluster id for simulation
+        actor.gt_aid_clusters = None  # 
+
+        # Reference to function to call to see if we can short-circuit a human review
         actor.test_fcn_for_short_circuit = None
+
+        # Statistics about the effectiveness of short-circuiting. These are
+        # output to the logging file 
         actor.short_circuit_count = 0
         actor.no_short_circuit_count = 0
         actor.short_circuit_correct = 0
@@ -823,25 +630,7 @@ class LCAActor(GraphActor):
         actor.phase = 0
         actor.loop_phase = 'init'
 
-        # fmt: off
-        actor.infr_config = {
-            # 'manual.n_peek': 100,
-            'inference.enabled': True,
-            'ranking.enabled': True,
-            'ranking.ntop': 10,
-            'redun.enabled': True,
-            'redun.enforce_neg': True,
-            'redun.enforce_pos': True,
-            'redun.neg.only_auto': False,
-            'redun.neg': 2,
-            'redun.pos': 2,
-            'refresh.window': 20,
-            'refresh.patience': 20,
-            'refresh.thresh': np.exp(-2),
-            'algo.hardcase': False,
-        }
-        # fmt: on
-
+        #  Set the ranker config file. This will require generalization.
         if ranker == 'hotspotter':
             actor.ranker_config = {}
         elif ranker == 'pie_v2':
@@ -852,6 +641,7 @@ class LCAActor(GraphActor):
         else:
             raise ValueError('Unsupported Ranker')
 
+        #  Set the verifier config. Really only Grevy's for now.
         species = 'zebra_grevys'
         if verifier == 'vamp':
             actor.verifier_config = {
@@ -868,6 +658,7 @@ class LCAActor(GraphActor):
         else:
             raise ValueError('Unsupported Verifier')
 
+        #  LCA's internal config.
         actor.lca_config = {
             'aug_names': [
                 ALGO_AUG_NAME,
@@ -896,6 +687,8 @@ class LCAActor(GraphActor):
         prob_human_correct = actor.lca_config.get(
             'prob_human_correct', HUMAN_CORRECT_RATE
         )
+
+        #  plugin config for controlling calibration and simulations.
         actor.config = {
             'LCA_calib_num_to_queue': 25,  # was 500
             'LCA_calib_required_reviews': 50,
@@ -921,7 +714,31 @@ class LCAActor(GraphActor):
         super(LCAActor, actor).__init__(*args, **kwargs)
 
     def _init_infr(actor, aids, dbdir, **kwargs):
+        """
+        Initiallize the inference object. Most important step is
+        initializing the verifier 
+        """
         import wbia
+
+        # Moved these down here because they aren't often changed.
+        # fmt: off
+        actor.infr_config = {
+            # 'manual.n_peek': 100,
+            'inference.enabled': True,
+            'ranking.enabled': True,
+            'ranking.ntop': 10,
+            'redun.enabled': True,
+            'redun.enforce_neg': True,
+            'redun.enforce_pos': True,
+            'redun.neg.only_auto': False,
+            'redun.neg': 2,
+            'redun.pos': 2,
+            'refresh.window': 20,
+            'refresh.patience': 20,
+            'refresh.thresh': np.exp(-2),
+            'algo.hardcase': False,
+        }
+        # fmt: on
 
         assert dbdir is not None, 'must specify dbdir'
         assert actor.infr is None, 'AnnotInference already running'
@@ -958,6 +775,10 @@ class LCAActor(GraphActor):
         cfgdict_=None,
         batch_size=None,
     ):
+        """
+        Copy of similarly-named function from the infr class.
+        Copied here so that we can separate query ids from database ids.
+        """
         # TODO: abstract into a Ranker class
 
         # do LNBNN query for new edges
@@ -974,9 +795,7 @@ class LCAActor(GraphActor):
             'prescore_method': prescore_method,
             'score_method': score_method,
         }
-        # if cfgdict_ is not None:
-        #     cfgdict.update(cfgdict_)
-
+        
         print('[find_lnbnn_candidate_edges] Using cfgdict = {}'.format(ut.repr3(cfgdict)))
 
         ranks_top = actor.infr.params['ranking.ntop']
@@ -988,10 +807,6 @@ class LCAActor(GraphActor):
             ranks_top=ranks_top,
         )
 
-        # if cfgdict_ is None:
-        #     # infr.apply_match_edges(review_cfg={'ranks_top': 5})
-        #     lnbnn_results = set(actor.infr._cm_breaking(review_cfg={'ranks_top': ranks_top}))
-        # else:
         assert response is not None
         lnbnn_results = set(response)
 
@@ -1014,8 +829,13 @@ class LCAActor(GraphActor):
         return candidate_edges
 
     def run_ranker_lnbnn(actor, aids, dbdir, qaids=None, config=None, **kwargs):
+        """
+        Run Hotspotter on the queries, against the aids database.
+        Store the resulting candidate matches as UNREVIEWED reviews.
+        """
         actor._init_infr(aids, dbdir, **kwargs)
 
+        # If no queries are provided run all against themselves.
         if qaids is None:
             qaids = aids
 
@@ -1074,6 +894,12 @@ class LCAActor(GraphActor):
         actor.infr = None  # Delete the infer
 
     def _prepare_reviews_and_edges(actor):
+        """
+        Prepare the reviews and the edge weights for LCA. In the usual case, where
+        the edge weighter calibration reviews are available, this function will end
+        after step 4. The remaining steps are for setting up the process of
+        gathering calibration reviews.
+        """
         #  0. Make sure this function is called only once for each actor object
         assert actor.new_verifier_quads is None
 
@@ -1124,7 +950,7 @@ class LCAActor(GraphActor):
 
         '''
         1. Form the candidate verifier algorithm edges. Such an edge is ANY review
-           edge that is not already in the edge_weights as an algorithm edge.
+           edge that is not already in the edge_weights as a verification algorithm edge.
         '''
         cand_algo_edges = list(set(edge_pairs) - set(ew_algo_edges))
         logger.info(f'Step 1: yields {len(cand_algo_edges)} new verifier algorithm edges')
@@ -1318,10 +1144,12 @@ class LCAActor(GraphActor):
             f'add_feedback_during_LCA_calib: edge {edge}, decision {evidence_decision}'
         )
 
-        #  Since we are in calibration mode, we only want one completed review
-        #  per annot. Hence, if one already exists, don't add a second (there
-        #  should only be one anyway, but sometimes there are delays) to avoid
-        #  unnecessary duplication.
+        """
+        Since we are in calibration mode, we only want one completed review
+        per annotation pair (edge). Hence, if one already exists, don't add
+        a second (there should only be one anyway, but sometimes there are delays)
+        to avoid unnecessary duplication.
+        """
 
         ibs = actor.infr.ibs
         rowids = ut.flatten(ibs.get_review_rowids_from_edges([edge]))
@@ -1329,7 +1157,7 @@ class LCAActor(GraphActor):
         is_known = [d in DECISION_TYPES for d in decisions]
         is_unknown = [not known for known in is_known]
 
-        logger.info(f'rowids {rowids}, decisions {decisions}')
+        logger.info(f'For this edges, we already have rowids {rowids}, decisions {decisions}')
 
         #  Remove reviews marked as unknown / unreviewed from the DB
         if any(is_unknown):
@@ -1368,18 +1196,18 @@ class LCAActor(GraphActor):
         elif evidence_decision == NEGTV:
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs'].append(prob)
             triple = (node1, node2, False)
-            decision_int = NEGATIVE
         else:
             logger.info(f'decision is neither pos nor neg so doing nothing')
             return
 
-        #  Save the triple for LCA.
+f        #  Save the triple for LCA.
         logger.info(f'Adding triple {triple} for LCA and recording review in DB')
         actor.new_human_review_triples.append(triple)
 
-        # ibs.add_review([a1], [a2], [decision_int], identity_list=[HUMAN_IDENTITY])
-
     def _init_weighter(actor):
+        """
+        Check to see if there are enough reviews and if so, initialize the weighter
+        """
         n_required = actor.config['LCA_calib_required_reviews']
         pos_probs = actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_positive_probs']
         neg_probs = actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs']
@@ -1394,6 +1222,10 @@ class LCAActor(GraphActor):
             logger.info(f'Not enough so returning without initializing weighter')
             return False
 
+        """
+        We have enough reviews!  If these are not already from a file, then save them
+        to the given file.
+        """
         if not actor.LCA_calib_reviews_are_from_file:
             logger.info(f'Not from file')
             pos_probs = filter_prob_outliers(pos_probs)
@@ -1413,12 +1245,15 @@ class LCAActor(GraphActor):
         logger.info('Here are the LCA probs for weight calibration')
         logger.info(ut.repr3(actor.reviews_for_LCA_calib[ALGO_AUG_NAME]))
 
+        """
+        Actually generate the weighters.
+        """
         wgtrs = ga_driver.generate_weighters(
             actor.lca_config, actor.reviews_for_LCA_calib
         )
         actor.wgtr = wgtrs[0]
 
-        # Update delta score thresholds
+        # Update delta score thresholds in the lca configg
         multiplier = actor.lca_config['min_delta_converge_multiplier']
         ratio = actor.lca_config['min_delta_stability_ratio']
 
@@ -1445,6 +1280,10 @@ class LCAActor(GraphActor):
         return True
 
     def _init_lca(actor):
+        """
+        Initialize the weighter and if it succeeds, also initialize the db and
+        the edge generator.
+        """
         wgtr_initialized = actor._init_weighter()
         if not wgtr_initialized:
             return
@@ -1453,7 +1292,12 @@ class LCAActor(GraphActor):
         actor.edge_gen = edge_generator_wbia(actor.db, actor.wgtr, controller=actor)
         actor.has_LCA_calib = True
 
-    def _candidate_edge_probs_auto(actor, candidate_edges, update_infr=False):
+    """  *****************************************
+    The next three functions compute the probabilities for edge weighting
+    """
+
+    def _candidate_edge_probs_auto(actor, candidate_edges):
+        # Use the VAMP verifier
         task_probs = actor.infr._make_task_probs(candidate_edges)
         match_probs = list(task_probs['match_state']['match'])
         nomatch_probs = list(task_probs['match_state']['nomatch'])
@@ -1461,10 +1305,10 @@ class LCAActor(GraphActor):
         for match_prob, nomatch_prob in zip(match_probs, nomatch_probs):
             prob_ = 0.5 + (match_prob - nomatch_prob) / 2
             candidate_probs.append(prob_)
-
         return candidate_probs
 
     def _candidate_edge_probs_pie_v2(actor, candidate_edges):
+        # Use the PIE verifier
         from wbia_pie_v2._plugin import distance_to_score
 
         # Ensure features
@@ -1512,6 +1356,12 @@ class LCAActor(GraphActor):
             args = (num_probs, min_probs, max_probs, avg_probs)
         logger.info('Verifier probs on %d edges: min %s, max %s, avg %s' % args)
         return candidate_probs
+
+    """  *****************************************
+    The next set of functions is for simulation of the review procedure
+    and for short-circuiting of ground truth.  In the standard running of
+    the plugin, none of these are used.
+    """
 
     def _load_simulation_ground_truth(actor):
         if (
@@ -1643,6 +1493,11 @@ class LCAActor(GraphActor):
         return None
 
     def _short_circuit_and_simulation(actor, edges):
+        """
+        Attempt to short circuit human reviews. Failing this, try to use a 
+        simulation of the ground truth reviews.  Failling this, send the edges
+        back for "normal" processing. This function starts by loading 
+        """
         actor._load_simulation_ground_truth()
         edges = actor._attempt_short_circuit(edges)
         if edges is not None:
@@ -1650,6 +1505,10 @@ class LCAActor(GraphActor):
         return edges
 
     def _make_review_tuples(actor, edges):
+        """
+        Add information about the edges to form the review requests.
+        This does nothing other than to use the defaults.
+        """
         if edges is None:
             return None
 
@@ -1923,7 +1782,7 @@ class LCAActor(GraphActor):
         except Exception:
             pass
         try:
-            actor_status['is_converged'] = actor.phase == 4
+            actor_status['is_converged'] = actor.phase > 4
         except Exception:
             pass
         try:
@@ -1979,6 +1838,6 @@ if __name__ == '__main__':
     CommandLine:
         python -m wbia_lca._plugin
     """
-    import xdoctest
+    # import xdoctest
 
-    xdoctest.doctest_module(__file__)
+    # xdoctest.doctest_module(__file__)
