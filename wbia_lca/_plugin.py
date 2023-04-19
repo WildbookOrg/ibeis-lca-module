@@ -73,6 +73,7 @@ back from the web UI and for converting back and forth between WBIA
 naming conventions and LCA naming conventions.
 """
 
+
 def is_aug_name_human(aug_name):
     return aug_name == HUMAN_AUG_NAME
 
@@ -165,11 +166,12 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
     """
     Provide the interface between WBIA and LCA for edges and clusters.
     """
+
     def __init__(self, actor):
         """
         Pull out the current edge weights and clustering from WBIA
         and prepare them for LCA. Communicate them to LCA via the
-        super class initializer        
+        super class initializer
         """
         self.controller = actor
         self.infr = actor.infr
@@ -223,7 +225,9 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
                 clustering[cluster_label_] = []
             clustering[cluster_label_].append(cluster_node_)
 
-        logger.info(f'At start, clustering has {len(clustering)} names. Here are the first few')
+        logger.info(
+            f'At start, clustering has {len(clustering)} names. Here are the first few'
+        )
         for nid in sorted(clustering.keys())[:25]:
             clustering[nid] = sorted(clustering[nid])
             logger.info(f'\tcluster NID {nid}: {clustering[nid]}')
@@ -277,7 +281,7 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
         Get all edge weights associated with the LCA node pair n0 and n1.
         This requires converting from LCA node ids to WBIA aids.
         """
-        a1, = convert_lca_node_id_to_wbia_annot_id(n0)
+        (a1,) = convert_lca_node_id_to_wbia_annot_id(n0)
         a2 = convert_lca_node_id_to_wbia_annot_id(n1)
         edges = [(a1, a2)]
         weight_rowid_list = self.ibs.get_edge_weight_rowids_from_edges(edges)
@@ -395,12 +399,13 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
 class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
     """
     Subclass of LCA edge_generator for WBIA-specific creation of edges
-    Its most important job is to manage the request for augmentations, 
+    Its most important job is to manage the request for augmentations,
     dividing this into verification requests that can handled immediately,
     and human review requests that must be queued up for review and then
     gathered (through the feedback method). The requests are kept internally
     in their LCA form
     """
+
     def __init__(self, db, wgtr, controller):
         """
         db and wgtr are LCA object
@@ -448,7 +453,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         to the web interface
         """
         requested_verifier_edges = []  # Requests for verifier
-        human_review_requests = []        # Requests for human review 
+        human_review_requests = []  # Requests for human review
         for edge in self.get_edge_requests():
             n0, n1, aug_name = edge
             if is_aug_name_algo(aug_name):
@@ -475,12 +480,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         logger.info(f'Added {len(probs)} verifier edge probs')
         logger.info(f'Kept {len(human_review_requests)} requests for human review')
 
-    def add_feedback(
-        self,
-        edge,
-        evidence_decision=None,
-        **kwargs
-    ):
+    def add_feedback(self, edge, evidence_decision=None, **kwargs):
         """
         This function is called when human reviews are given for edges
         requested by LCA.
@@ -609,17 +609,17 @@ class LCAActor(GraphActor):
         # Dictionary of verifier probabilities for human-review edges
         actor.reviews_for_LCA_calib = None
 
-        # Set to True if tried to open pkl file of ground truth clusters and failed. 
+        # Set to True if tried to open pkl file of ground truth clusters and failed.
         actor.failed_to_open_gt_clusters_filepath = False
 
         # Ground truth mapping from WBIA aid to cluster id for simulation
-        actor.gt_aid_clusters = None  # 
+        actor.gt_aid_clusters = None  #
 
         # Reference to function to call to see if we can short-circuit a human review
         actor.test_fcn_for_short_circuit = None
 
         # Statistics about the effectiveness of short-circuiting. These are
-        # output to the logging file 
+        # output to the logging file
         actor.short_circuit_count = 0
         actor.no_short_circuit_count = 0
         actor.short_circuit_correct = 0
@@ -716,7 +716,7 @@ class LCAActor(GraphActor):
     def _init_infr(actor, aids, dbdir, **kwargs):
         """
         Initiallize the inference object. Most important step is
-        initializing the verifier 
+        initializing the verifier
         """
         import wbia
 
@@ -793,7 +793,7 @@ class LCAActor(GraphActor):
             'prescore_method': prescore_method,
             'score_method': score_method,
         }
-        
+
         print('[find_lnbnn_candidate_edges] Using cfgdict = {}'.format(ut.repr3(cfgdict)))
 
         ranks_top = actor.infr.params['ranking.ntop']
@@ -1155,7 +1155,9 @@ class LCAActor(GraphActor):
         is_known = [d in DECISION_TYPES for d in decisions]
         is_unknown = [not known for known in is_known]
 
-        logger.info(f'For this edges, we already have rowids {rowids}, decisions {decisions}')
+        logger.info(
+            f'For this edges, we already have rowids {rowids}, decisions {decisions}'
+        )
 
         #  Remove reviews marked as unknown / unreviewed from the DB
         if any(is_unknown):
@@ -1492,9 +1494,9 @@ class LCAActor(GraphActor):
 
     def _short_circuit_and_simulation(actor, edges):
         """
-        Attempt to short circuit human reviews. Failing this, try to use a 
+        Attempt to short circuit human reviews. Failing this, try to use a
         simulation of the ground truth reviews.  Failling this, send the edges
-        back for "normal" processing. This function starts by loading 
+        back for "normal" processing. This function starts by loading
         """
         actor._load_simulation_ground_truth()
         edges = actor._attempt_short_circuit(edges)
