@@ -2,7 +2,7 @@
 from wbia.control import controller_inject
 from wbia import constants as const
 from wbia.web.graph_server import GraphClient, GraphActor
-from wbia.algo.graph.state import POSTV, NEGTV, INCMP, UNREV, UNKWN, NULL
+from wbia.algo.graph.state import POSTV, NEGTV, INCMP, UNREV, UNKWN
 
 import numpy as np
 import os
@@ -13,14 +13,12 @@ from functools import partial
 from wbia_lca import db_interface
 from wbia_lca import edge_generator
 
-import configparser
+# import configparser
 import threading
 import random
-import json
-import sys
+# import json
 
 from wbia_lca import ga_driver
-from wbia_lca import overall_driver
 
 import tqdm
 
@@ -153,7 +151,7 @@ Removed:
 GGR specifics;
 . def get_dates(ibs, gid_list, gmt_offset=3.0):
 . def get_ggr_stats(ibs, valid_aids, valid_nids):
-ong version of 
+  wrong version of
 . def progress_db(actor, gai, iter_num):
 """
 
@@ -465,7 +463,6 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
 
         probs = actor._candidate_edge_probs(requested_verifier_edges)
 
-        zipped = (requested_verifier_edges, probs)
         self.edge_results += [
             (
                 convert_wbia_annot_id_to_lca_node_id(e[0]),
@@ -504,7 +501,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
             return
 
         """
-        Task 1: Provide the new edge to LCA, which will grab it as 
+        Task 1: Provide the new edge to LCA, which will grab it as
         part of the next iteration.
         """
         aid1, aid2 = edge
@@ -996,7 +993,7 @@ class LCAActor(GraphActor):
             for a1, a2 in lca_pos_edges
         ]
         logger.info(
-            f'Step 3 initialized new_human_triples for LCA: '
+            'Step 3 initialized new_human_triples for LCA: '
             + f'{len(lca_neg_edges)} negative reviews and'
             + f'{len(lca_pos_edges)} positive reviews.'
         )
@@ -1069,7 +1066,7 @@ class LCAActor(GraphActor):
         6. Finally, we organize the unreviewed edges in preparation to get
            more human reviews for LCA weighter calibration. We do this by
            pairing unreviewed edges and their probabilities, binning these
-           in increments of 0.1 probability, and then pulling one value 
+           in increments of 0.1 probability, and then pulling one value
            from each bin, in order, until all bins are empty
         '''
         # 6a. Start by gathering all unreviewed edges and their verifier probs.
@@ -1119,7 +1116,7 @@ class LCAActor(GraphActor):
         actor.before_review_for_LCA_calib = before
         actor.in_review_for_LCA_calib = []
         logger.info(
-            f'Step 6, end of _prepare_reviews_and_edges: '
+            'Step 6, end of _prepare_reviews_and_edges: '
             + f'{len(actor.before_review_for_LCA_calib)} unreviewed edges'
         )
 
@@ -1188,7 +1185,7 @@ class LCAActor(GraphActor):
         logger.info(f'prob {prob}')
 
         if prob == -1:
-            logger.info(f'Not a candidate edge so doing nothing')
+            logger.info('Not a candidate edge so doing nothing')
             return
         if evidence_decision == POSTV:
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_positive_probs'].append(prob)
@@ -1197,7 +1194,7 @@ class LCAActor(GraphActor):
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs'].append(prob)
             triple = (node1, node2, False)
         else:
-            logger.info(f'decision is neither pos nor neg so doing nothing')
+            logger.info('decision is neither pos nor neg so doing nothing')
             return
 
         #  Save the triple for LCA.
@@ -1219,7 +1216,7 @@ class LCAActor(GraphActor):
         if not actor.LCA_calib_reviews_are_from_file and (
             len(pos_probs) < n_required or len(neg_probs) < n_required
         ):
-            logger.info(f'Not enough so returning without initializing weighter')
+            logger.info('Not enough so returning without initializing weighter')
             return False
 
         """
@@ -1227,7 +1224,7 @@ class LCAActor(GraphActor):
         to the given file.
         """
         if not actor.LCA_calib_reviews_are_from_file:
-            logger.info(f'Not from file')
+            logger.info('Not from file')
             pos_probs = filter_prob_outliers(pos_probs)
             logger.info(f'After filtering there are {len(pos_probs)} positive remaining')
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_positive_probs'] = pos_probs
@@ -1408,10 +1405,12 @@ class LCAActor(GraphActor):
     def _attempt_short_circuit(actor, edges):
         if actor.test_fcn_for_short_circuit is None:
             return edges
+        ibs = actor.infr.ibs
 
         remaining_edges = []
         for edge in edges:
             if actor.test_fcn_for_short_circuit(ibs, edge):
+                aid1, aid2 = edge
                 if actor.gt_aid_clusters is None:
                     actor.short_circuit_count += 1
                     logger.info(
