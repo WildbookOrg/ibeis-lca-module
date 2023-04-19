@@ -1198,7 +1198,7 @@ class LCAActor(GraphActor):
             logger.info(f'decision is neither pos nor neg so doing nothing')
             return
 
-f        #  Save the triple for LCA.
+        #  Save the triple for LCA.
         logger.info(f'Adding triple {triple} for LCA and recording review in DB')
         actor.new_human_review_triples.append(triple)
 
