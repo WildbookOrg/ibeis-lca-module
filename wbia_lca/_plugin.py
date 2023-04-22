@@ -16,6 +16,7 @@ from wbia_lca import edge_generator
 # import configparser
 import threading
 import random
+
 # import json
 
 from wbia_lca import ga_driver
@@ -48,7 +49,7 @@ HUMAN_CORRECT_RATE = 0.98
 # LOG_DECISION_FILE = 'lca.decisions.csv'
 LOG_LCA_FILE = 'lca.log'
 
-OVERALL_CONFIG_FILE = 'lca_plugin_overall.cfg'
+OVERALL_CONFIG_FILE = '/data/db/lca_plugin_overall.cfg'
 
 """
 Need to be careful of types and values. Review feedback coming from
@@ -143,6 +144,19 @@ def order_nodes_in_edge(edge):
         return (edge[1], edge[0])
     else:
         return edge
+
+
+def should_short_circuit_review(ibs, edge):
+    """
+    Given an edge that is about to be reviewed by a human, are there
+    time/location constraints on the two annotations that form the edge
+    that tell us immediately that they can't be pictures of the same
+    animal.
+
+    AVI:  INSERT YOUR FUNCTION HERE
+
+    """
+    return False
 
 
 """
@@ -279,7 +293,7 @@ class db_interface_wbia(db_interface.db_interface):  # NOQA
         Get all edge weights associated with the LCA node pair n0 and n1.
         This requires converting from LCA node ids to WBIA aids.
         """
-        (a1,) = convert_lca_node_id_to_wbia_annot_id(n0)
+        a1 = convert_lca_node_id_to_wbia_annot_id(n0)
         a2 = convert_lca_node_id_to_wbia_annot_id(n1)
         edges = [(a1, a2)]
         weight_rowid_list = self.ibs.get_edge_weight_rowids_from_edges(edges)
@@ -571,6 +585,14 @@ class LCAActor(GraphActor):
         The init function is a bit of mess and needs more abstraction.
         """
 
+        """
+        The overall config is in a file in a fixed location, communicated
+        via the global constant full path. Propagating here via the kwargs
+        dictionary would be a better solution, but it would require a number
+        of changes to WBIA that I'm currently unwilling to make.
+        """
+        actor.overall_config = ut.load_cPkl(OVERALL_CONFIG_FILE)
+
         # The inference object for the Hotspotter (LNBNN) and VAMP
         actor.infr = None
         actor.graph_uuid = None
@@ -612,11 +634,9 @@ class LCAActor(GraphActor):
         # Ground truth mapping from WBIA aid to cluster id for simulation
         actor.gt_aid_clusters = None  #
 
-        # Reference to function to call to see if we can short-circuit a human review
-        actor.test_fcn_for_short_circuit = None
-
         # Statistics about the effectiveness of short-circuiting. These are
         # output to the logging file
+        actor.use_short_circuiting = actor.overall_config['use_short_circuiting']
         actor.short_circuit_count = 0
         actor.no_short_circuit_count = 0
         actor.short_circuit_correct = 0
@@ -626,6 +646,10 @@ class LCAActor(GraphActor):
 
         actor.phase = 0
         actor.loop_phase = 'init'
+
+        #  Set the verifier config. Really only Grevy's for now.
+        ranker = actor.overall_config['ranker']
+        verifier = actor.overall_config['verifier']
 
         #  Set the ranker config file. This will require generalization.
         if ranker == 'hotspotter':
@@ -638,15 +662,9 @@ class LCAActor(GraphActor):
         else:
             raise ValueError('Unsupported Ranker')
 
-        #  Set the verifier config. Really only Grevy's for now.
-        species = 'zebra_grevys'
         if verifier == 'vamp':
             actor.verifier_config = {
                 'verifier': 'vamp',
-                'load_verifier_gt_filepath': '/data/db/lca_verifier_' + species + '.pkl',
-                'save_verifier_gt_filepath': '/data/db/lca_verifier_'
-                + species
-                + '_new.pkl',
             }
         elif verifier == 'pie_v2':
             actor.verifier_config = {
@@ -692,13 +710,6 @@ class LCAActor(GraphActor):
             'LCA_calib_max_reviews': 1000,
             'simreview.enabled': True,
             'simreview.prob_human_correct': prob_human_correct,
-            'load_gt_aid_clusters_filepath': '/data/db/lca_cluster_gt_'
-            + species
-            + '.pkl',
-            'save_gt_aid_clusters_filepath': '/data/db/lca_cluster_gt_'
-            + species
-            + '_new.pkl',
-            'LCA_run_on_all_names': True,
         }
 
         from wbia_lca import formatter
@@ -846,7 +857,7 @@ class LCAActor(GraphActor):
         candidate_edges = []
         K = 5
         Knorm = 5
-        desired_states = [POSTV, NEGTV, INCMP, UNKWN, UNREV]  # prob m
+        desired_states = [POSTV, NEGTV, INCMP, UNKWN, UNREV]  # prob reduce to just UNREV
         for score_method in ['csum']:  # #['csum', 'nsum']:
             candidate_edges += actor._find_lnbnn_candidate_edges(
                 qaids,
@@ -1003,12 +1014,10 @@ class LCAActor(GraphActor):
            a new species (newly using LCA), this should usually be the case in
            practice.
         '''
-        load_verifier_gt_filepath = actor.verifier_config.get(
-            'load_verifier_gt_filepath', None
-        )
-        if load_verifier_gt_filepath is not None:
-            if os.path.isfile(load_verifier_gt_filepath):
-                actor.reviews_for_LCA_calib = ut.load_cPkl(load_verifier_gt_filepath)
+        verifier_gt_filepath = actor.overall_config.get('verifier_gt_filepath', None)
+        if verifier_gt_filepath is not None:
+            if os.path.isfile(verifier_gt_filepath):
+                actor.reviews_for_LCA_calib = ut.load_cPkl(verifier_gt_filepath)
                 actor.LCA_calib_reviews_are_from_file = True
                 num_pos = len(
                     actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_positive_probs']
@@ -1017,18 +1026,18 @@ class LCAActor(GraphActor):
                     actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs']
                 )
                 logger.info(
-                    'Step 4: loading LCA calibration probs from {load_verifier_gt_filepath}'
+                    f'Step 4: loading LCA calibration probs from {verifier_gt_filepath}'
                 )
                 logger.info(
-                    f'Loaded {num_pos} positive review probs from {load_verifier_gt_filepath}'
+                    f'Loaded {num_pos} positive review probs from {verifier_gt_filepath}'
                 )
                 logger.info(
-                    f'Loaded {num_neg} negative review probs from {load_verifier_gt_filepath}'
+                    f'Loaded {num_neg} negative review probs from {verifier_gt_filepath}'
                 )
                 return
             else:
                 logger.info(
-                    f'Step 4: no file {load_verifier_gt_filepath} for LCA weighter calibration'
+                    f'Step 4: no file {verifier_gt_filepath} for LCA human review probs for wgtr'
                 )
 
         '''
@@ -1232,12 +1241,16 @@ class LCAActor(GraphActor):
             logger.info(f'After filtering there are {len(neg_probs)} positive remaining')
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs'] = neg_probs
 
-            save_verifier_gt_filepath = actor.verifier_config.get(
-                'save_verifier_gt_filepath', None
-            )
-            if save_verifier_gt_filepath is not None:
-                ut.save_cPkl(save_verifier_gt_filepath, actor.reviews_for_LCA_calib)
-                logger.info(f'Saved probs to {save_verifier_gt_filepath}')
+            verifier_gt_filepath = actor.overall_config.get('verifier_gt_filepath', None)
+            if verifier_gt_filepath is not None:
+                ut.save_cPkl(verifier_gt_filepath, actor.reviews_for_LCA_calib)
+                logger.info(
+                    f'Saved verifier human review GT probs to {verifier_gt_filepath}'
+                )
+            else:
+                logger.info(
+                    'Did not save verifier human review GT probs because filepath is None'
+                )
 
         logger.info('Here are the LCA probs for weight calibration')
         logger.info(ut.repr3(actor.reviews_for_LCA_calib[ALGO_AUG_NAME]))
@@ -1324,7 +1337,7 @@ class LCAActor(GraphActor):
 
         return candidate_probs
 
-    def _candidate_edge_probs(actor, candidate_edges, update_infr=False):
+    def _candidate_edge_probs(actor, candidate_edges):
         """
         Given the candidate edges this returns:
         . Their verifier probabilities
@@ -1335,9 +1348,7 @@ class LCAActor(GraphActor):
 
         verifier_algo = actor.verifier_config.get('verifier', 'vamp')
         if verifier_algo == 'vamp':
-            candidate_probs = actor._candidate_edge_probs_auto(
-                candidate_edges, update_infr=update_infr
-            )
+            candidate_probs = actor._candidate_edge_probs_auto(candidate_edges)
         elif verifier_algo == 'pie_v2':
             candidate_probs = actor._candidate_edge_probs_pie_v2(candidate_edges)
         else:
@@ -1367,25 +1378,31 @@ class LCAActor(GraphActor):
         ):
             return
 
-        load_gt_aid_clusters_filepath = actor.config.get(
-            'load_gt_aid_clusters_filepath', None
-        )
-        if load_gt_aid_clusters_filepath is None or not os.path.isfile(
-            load_gt_aid_clusters_filepath
+        clustering_result_filepath = actor.config.get('clustering_result_filepath', None)
+        if clustering_result_filepath is None or not os.path.isfile(
+            clustering_result_filepath
         ):
             actor.failed_to_open_gt_clusters_filepath = True
             logger.info(
                 'Requesting simulation but could not open gt aids '
-                + f'cluster file {load_gt_aid_clusters_filepath}'
+                + f'cluster file {clustering_result_filepath}'
             )
         else:
-            actor.gt_aid_clusters = ut.load_cPkl(load_gt_aid_clusters_filepath)
+            actor.gt_aid_clusters = ut.load_cPkl(clustering_result_filepath)
+            gt_aids = list(actor.gt_aid_clusters.keys())
             num_aids = len(actor.gt_aid_clusters)
             num_nids = len(set(actor.gt_aid_clusters.values()))
             logger.info(
                 f'Loaded {num_aids} aids and {num_nids} nids/clusters '
-                + f'from {load_gt_aid_clusters_filepath}'
+                + f'from {clustering_result_filepath}'
             )
+            if not (set(gt_aids) == set(actor.infr.aids)):
+                not_in_infr_aids = set(gt_aids) - set(actor.infr.aids)
+                not_in_gt_aids = set(actor.infr.aids) - set(gt_aids)
+                logging.info("ERROR: in simulation, aids different from GT aids")
+                logging.info(f'{len(not_in_infr_aids)} missing from aids')
+                logging.info(f'{len(not_in_gt_aids)} missing from GT aids')
+                assert False
 
     def _save_clustering_as_simulation_gt(actor):
         fp = actor.config.get('save_gt_aid_clusters_filepath', None)
@@ -1403,13 +1420,13 @@ class LCAActor(GraphActor):
         )
 
     def _attempt_short_circuit(actor, edges):
-        if actor.test_fcn_for_short_circuit is None:
+        if not actor.overall_config.get('use_short_circuiting', False):
             return edges
         ibs = actor.infr.ibs
 
         remaining_edges = []
         for edge in edges:
-            if actor.test_fcn_for_short_circuit(ibs, edge):
+            if should_short_circuit_review(ibs, edge):
                 aid1, aid2 = edge
                 if actor.gt_aid_clusters is None:
                     actor.short_circuit_count += 1
@@ -1629,10 +1646,11 @@ class LCAActor(GraphActor):
         #  3c. In the atypical case that both of the foregoing are empty, it is likely
         #      that LCA processing was stopped before completion, but after adding
         #      the verifier and/or human results.  To recover from this, we tell
-        #      LCA to review the clusters and work from there.
-        if (len(verifier_results) == 0 and len(human_triples) == 0) or actor.config[
-            'LCA_run_on_all_names'
-        ]:
+        #      LCA to review the clusters and work from there.  The run_on_all_names is
+        #      get to True to force everything to be checked.
+        if (
+            len(verifier_results) == 0 and len(human_triples) == 0
+        ) or actor.overall_config['run_on_all_names']:
             cluster_ids_to_check = list(actor.db.clustering.keys())
             logger.info(
                 'Starting with no new verifier or human review edges, '
