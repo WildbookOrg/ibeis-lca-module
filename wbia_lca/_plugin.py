@@ -807,7 +807,7 @@ class LCAActor(GraphActor):
         ranks_top = actor.infr.params['ranking.ntop']
         response = actor.infr.exec_matching(
             qaids=qaids,
-            name_method='edge',
+            name_method='wbia',   # was 'edge',
             cfgdict=cfgdict,
             batch_size=batch_size,
             ranks_top=ranks_top,
@@ -1058,7 +1058,7 @@ class LCAActor(GraphActor):
             }
         }
 
-        # 5b. Log the number of positive and negative edges needed
+        # 5b. Determine the number of positive and negative edges still needed
         num_req = actor.config["LCA_calib_required_reviews"]
         num_pos_needed = max(0, num_req - len(rev_pos_edges))
         num_neg_needed = max(0, num_req - len(rev_neg_edges))
