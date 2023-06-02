@@ -317,10 +317,10 @@ class ga_driver(object):  # NOQA
             for n0, n1, w, _ in outgoing_edges:
                 aggregate_edges[(n0, n1)] += w
             for (n0, n1), sum_w in aggregate_edges.items():
-                if sum_w > 0:
-                    cid0 = self.get_cid(n0)
-                    cid1 = self.get_cid(n1)
-                    self.add_cid_pair(cid0, cid1)
+                # if sum_w > 0:  # removed conditional for placing too much confidence in verifier
+                cid0 = self.get_cid(n0)
+                cid1 = self.get_cid(n1)
+                self.add_cid_pair(cid0, cid1)
 
     def is_temp(self, cid):
         return cid.startswith(self.temp_prefix)
