@@ -54,6 +54,10 @@ class db_interface(object):  # NOQA
         underlying database.
         """
         self.edge_graph.add_edges_from([(n0, n1) for n0, n1, _, _ in quads])
+        logger.info(f'Added {len(quads)} edges from quads')
+        # num_components = len(list(nx.connected_components(self.edge_graph)))
+        # logger.info(f'The current edge graph has {num_components} connected components')
+        # logger.info(f'The current edge graph has {self.edge_graph.size()} edges')
         if are_edges_new:
             self.add_edges_db(quads)
 
