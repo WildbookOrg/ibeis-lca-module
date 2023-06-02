@@ -171,7 +171,8 @@ GGR specifics;
 
 
 def progress_db(actor, gai, iter_num):
-    logger.info('progress_db, iter_num %d' % iter_num)
+    # logger.info('progress_db, iter_num %d' % iter_num)
+    pass
 
 
 class db_interface_wbia(db_interface.db_interface):  # NOQA
