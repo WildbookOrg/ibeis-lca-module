@@ -178,8 +178,7 @@ class LCA(object):
         return missing
 
     def pprint_short(self, initial_str='', stop_after_from=False):
-        out_str = initial_str + 'delta_score %a\n' % self.delta_score()
-        out_str += 'From cid(s) and cluster(s):'
+        out_str = initial_str + 'From cid(s) and cluster(s):'
         for cid in sorted(self.from_clusters.keys()):
             out_str += '  %s: %a' % (cid, sorted(self.from_clusters[cid]))
 
@@ -205,6 +204,8 @@ class LCA(object):
                     check_score,
                     self.to_score,
                 )
+        out_str += '\ndelta_score %a' % self.delta_score()
+
         logger.info(out_str)
 
     def pprint(self, stop_after_from=False):
