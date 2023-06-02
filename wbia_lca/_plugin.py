@@ -431,7 +431,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         99.9% sure this isn't needed.
         """
         clean_edge_requests = []
-        logger.info(f'_cleanup_edges, edge_requests are {self.edge_requests}')
+        # logger.info(f'_cleanup_edges, edge_requests are {self.edge_requests}')
         for edge in self.edge_requests:
             n0, n1, aug_name = edge
             aid1 = convert_lca_node_id_to_wbia_annot_id(n0)
@@ -460,7 +460,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
         actor = self.controller
         """
         Called from LCA through super class method to handle augmentation requests.
-        Requests for verification probability edges are handle immediately and saved
+        Requests for verification probability edges are handled immediately and saved
         as results for LCA to grab. Requests for human reviews are saved for sending
         to the web interface
         """
@@ -475,9 +475,11 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
             else:
                 human_review_requests.append(edge)
 
+        # Get edge probabilities from the verifier
         probs = actor._candidate_edge_probs(requested_verifier_edges)
 
-        self.edge_results += [
+        # Convert these probabilities to quads
+        verifier_quads = [
             (
                 convert_wbia_annot_id_to_lca_node_id(e[0]),
                 convert_wbia_annot_id_to_lca_node_id(e[1]),
@@ -486,9 +488,18 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
             )
             for e, p in zip(requested_verifier_edges, probs)
         ]
+
+        # Convert the probability quads to edge weight quads; while doing so, add
+        # to the database.
+        wgt_quads = self.new_edges_from_verifier(verifiers_quads)
+
+        # Set the verifier results for LCA to pick up.
+        self.edge_results += wgt_quads
+
+        # Set the human review requests to be sent to the web interface.
         self.set_edge_requests(human_review_requests)
 
-        logger.info(f'Added {len(probs)} verifier edge probs')
+        logger.info(f'Added {len(wgt_quads)} verifier edge quads')
         logger.info(f'Kept {len(human_review_requests)} requests for human review')
 
     def add_feedback(self, edge, evidence_decision=None, **kwargs):
