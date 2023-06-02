@@ -178,9 +178,10 @@ class LCA(object):
         return missing
 
     def pprint_short(self, initial_str='', stop_after_from=False):
-        out_str = initial_str + 'From cids:'
+        out_str = initial_str + 'delta_score %a\n' % self.delta_score()
+        out_str += 'From cid(s) and cluster(s):'
         for cid in sorted(self.from_clusters.keys()):
-            out_str += ' %s: %a' % (cid, sorted(self.from_clusters[cid]))
+            out_str += '  %s: %a' % (cid, sorted(self.from_clusters[cid]))
 
         if logger.getEffectiveLevel() <= logging.DEBUG:
             check_score = ct.clustering_score(self.subgraph, self.from_n2c)
@@ -193,9 +194,9 @@ class LCA(object):
             logger.info(out_str)
             return
 
-        out_str += '; to:'
+        out_str += '\nTo cluster(s):'
         for cid in sorted(self.to_clusters.keys()):
-            out_str += ' %a' % sorted(self.to_clusters[cid])
+            out_str += '  %a' % sorted(self.to_clusters[cid])
 
         if logger.getEffectiveLevel() <= logging.DEBUG:
             check_score = ct.clustering_score(self.subgraph, self.to_n2c)
@@ -204,7 +205,6 @@ class LCA(object):
                     check_score,
                     self.to_score,
                 )
-        out_str += '; delta %d' % self.delta_score()
         logger.info(out_str)
 
     def pprint(self, stop_after_from=False):
