@@ -492,7 +492,7 @@ class edge_generator_wbia(edge_generator.edge_generator):  # NOQA
 
         # Convert the probability quads to edge weight quads; while doing so, add
         # to the database.
-        wgt_quads = self.new_edges_from_verifier(verifiers_quads)
+        wgt_quads = self.new_edges_from_verifier(verifier_quads)
 
         # Set the verifier results for LCA to pick up.
         self.edge_results += wgt_quads
