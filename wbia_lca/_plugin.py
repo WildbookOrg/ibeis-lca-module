@@ -819,7 +819,7 @@ class LCAActor(GraphActor):
         ranks_top = actor.infr.params['ranking.ntop']
         response = actor.infr.exec_matching(
             qaids=qaids,
-            name_method='wbia',   # was 'edge',
+            name_method='wbia',  # was 'edge',
             cfgdict=cfgdict,
             batch_size=batch_size,
             ranks_top=ranks_top,
@@ -1026,7 +1026,9 @@ class LCAActor(GraphActor):
            a new species (newly using LCA), this should usually be the case in
            practice.
         '''
-        verifier_calib_filepath = actor.overall_config.get('verifier_calib_filepath', None)
+        verifier_calib_filepath = actor.overall_config.get(
+            'verifier_calib_filepath', None
+        )
         if verifier_calib_filepath is not None:
             if os.path.isfile(verifier_calib_filepath):
                 actor.reviews_for_LCA_calib = ut.load_cPkl(verifier_calib_filepath)
@@ -1253,7 +1255,9 @@ class LCAActor(GraphActor):
             logger.info(f'After filtering there are {len(neg_probs)} positive remaining')
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs'] = neg_probs
 
-            verifier_calib_filepath = actor.overall_config.get('verifier_calib_filepath', None)
+            verifier_calib_filepath = actor.overall_config.get(
+                'verifier_calib_filepath', None
+            )
             if verifier_calib_filepath is not None:
                 ut.save_cPkl(verifier_calib_filepath, actor.reviews_for_LCA_calib)
                 logger.info(
@@ -1379,7 +1383,7 @@ class LCAActor(GraphActor):
 
     """  *****************************************
     The next set of functions is for simulation of the review procedure
-    and for short-circuiting of ground truth.  
+    and for short-circuiting of ground truth.
     """
 
     def _load_simulation_ground_truth(actor):
@@ -1390,9 +1394,7 @@ class LCAActor(GraphActor):
             return
 
         clustering_gt_filepath = actor.config.get('clustering_gt_filepath', None)
-        if clustering_gt_filepath is None or not os.path.isfile(
-            clustering_gt_filepath
-        ):
+        if clustering_gt_filepath is None or not os.path.isfile(clustering_gt_filepath):
             actor.failed_to_open_gt_clusters_filepath = True
             logger.info(
                 'Requesting simulation but could not open gt aids '
@@ -1555,7 +1557,6 @@ class LCAActor(GraphActor):
         logger.info(f'Leaving start with status {status}')
         return status
 
-
     def save_clustering_separately(actor, fp):
         """
         Save the clustering as a pickled dictionary mapping from annotation id to name id.
@@ -1572,7 +1573,6 @@ class LCAActor(GraphActor):
             f'Saved mapping of {len(aids)} annot ids (aids) to {num_nids} '
             + f' name ids / nids to {fp} '
         )
-
 
     def main_gen(actor):
         assert actor.infr is not None
