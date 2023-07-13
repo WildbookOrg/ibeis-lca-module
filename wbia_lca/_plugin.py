@@ -1026,10 +1026,10 @@ class LCAActor(GraphActor):
            a new species (newly using LCA), this should usually be the case in
            practice.
         '''
-        verifier_gt_filepath = actor.overall_config.get('verifier_gt_filepath', None)
-        if verifier_gt_filepath is not None:
-            if os.path.isfile(verifier_gt_filepath):
-                actor.reviews_for_LCA_calib = ut.load_cPkl(verifier_gt_filepath)
+        verifier_calib_filepath = actor.overall_config.get('verifier_calib_filepath', None)
+        if verifier_calib_filepath is not None:
+            if os.path.isfile(verifier_calib_filepath):
+                actor.reviews_for_LCA_calib = ut.load_cPkl(verifier_calib_filepath)
                 actor.LCA_calib_reviews_are_from_file = True
                 num_pos = len(
                     actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_positive_probs']
@@ -1038,18 +1038,18 @@ class LCAActor(GraphActor):
                     actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs']
                 )
                 logger.info(
-                    f'Step 4: loading LCA calibration probs from {verifier_gt_filepath}'
+                    f'Step 4: loading LCA calibration probs from {verifier_calib_filepath}'
                 )
                 logger.info(
-                    f'Loaded {num_pos} positive review probs from {verifier_gt_filepath}'
+                    f'Loaded {num_pos} positive review probs from {verifier_calib_filepath}'
                 )
                 logger.info(
-                    f'Loaded {num_neg} negative review probs from {verifier_gt_filepath}'
+                    f'Loaded {num_neg} negative review probs from {verifier_calib_filepath}'
                 )
                 return
             else:
                 logger.info(
-                    f'Step 4: no file {verifier_gt_filepath} for LCA human review probs for wgtr'
+                    f'Step 4: no file {verifier_calib_filepath} for LCA human review probs for wgtr'
                 )
 
         '''
@@ -1253,11 +1253,11 @@ class LCAActor(GraphActor):
             logger.info(f'After filtering there are {len(neg_probs)} positive remaining')
             actor.reviews_for_LCA_calib[ALGO_AUG_NAME]['gt_negative_probs'] = neg_probs
 
-            verifier_gt_filepath = actor.overall_config.get('verifier_gt_filepath', None)
-            if verifier_gt_filepath is not None:
-                ut.save_cPkl(verifier_gt_filepath, actor.reviews_for_LCA_calib)
+            verifier_calib_filepath = actor.overall_config.get('verifier_calib_filepath', None)
+            if verifier_calib_filepath is not None:
+                ut.save_cPkl(verifier_calib_filepath, actor.reviews_for_LCA_calib)
                 logger.info(
-                    f'Saved verifier human review GT probs to {verifier_gt_filepath}'
+                    f'Saved verifier human review GT probs to {verifier_calib_filepath}'
                 )
             else:
                 logger.info(
@@ -1379,8 +1379,7 @@ class LCAActor(GraphActor):
 
     """  *****************************************
     The next set of functions is for simulation of the review procedure
-    and for short-circuiting of ground truth.  In the standard running of
-    the plugin, none of these are used.
+    and for short-circuiting of ground truth.  
     """
 
     def _load_simulation_ground_truth(actor):
@@ -1390,23 +1389,23 @@ class LCAActor(GraphActor):
         ):
             return
 
-        clustering_result_filepath = actor.config.get('clustering_result_filepath', None)
-        if clustering_result_filepath is None or not os.path.isfile(
-            clustering_result_filepath
+        clustering_gt_filepath = actor.config.get('clustering_gt_filepath', None)
+        if clustering_gt_filepath is None or not os.path.isfile(
+            clustering_gt_filepath
         ):
             actor.failed_to_open_gt_clusters_filepath = True
             logger.info(
                 'Requesting simulation but could not open gt aids '
-                + f'cluster file {clustering_result_filepath}'
+                + f'cluster file {clustering_gt_filepath}'
             )
         else:
-            actor.gt_aid_clusters = ut.load_cPkl(clustering_result_filepath)
+            actor.gt_aid_clusters = ut.load_cPkl(clustering_gt_filepath)
             gt_aids = list(actor.gt_aid_clusters.keys())
             num_aids = len(actor.gt_aid_clusters)
             num_nids = len(set(actor.gt_aid_clusters.values()))
             logger.info(
                 f'Loaded {num_aids} aids and {num_nids} nids/clusters '
-                + f'from {clustering_result_filepath}'
+                + f'from {clustering_gt_filepath}'
             )
             if not (set(gt_aids) == set(actor.infr.aids)):
                 not_in_infr_aids = set(gt_aids) - set(actor.infr.aids)
@@ -1415,21 +1414,6 @@ class LCAActor(GraphActor):
                 logging.info(f'{len(not_in_infr_aids)} missing from aids')
                 logging.info(f'{len(not_in_gt_aids)} missing from GT aids')
                 assert False
-
-    def _save_clustering_as_simulation_gt(actor):
-        fp = actor.config.get('save_gt_aid_clusters_filepath', None)
-        if fp is None:
-            return
-        ibs = actor.infr.ibs
-        aids = actor.infr.aids
-        nids = ibs.get_annot_nids(aids)
-        num_nids = len(set(nids))
-        aids_to_nids = {a: n for a, n in zip(aids, nids)}
-        ut.save_cPkl(fp, aids_to_nids)
-        logger.info(
-            f'Saved mapping of {len(aids)} annot ids (aids) to {num_nids} '
-            + f' name ids / nids to {fp} as clustering GT'
-        )
 
     def _attempt_short_circuit(actor, edges):
         if not actor.overall_config.get('use_short_circuiting', False):
@@ -1443,18 +1427,18 @@ class LCAActor(GraphActor):
                 if actor.gt_aid_clusters is None:
                     actor.short_circuit_count += 1
                     logger.info(
-                        f'Short-circuiting {edge}, count is {actor.short_circuit_count}'
+                        f'short-circuiting {edge}, count is {actor.short_circuit_count}'
                     )
                 elif actor.gt_aid_clusters[aid1] == actor.gt_aid_clusters[aid2]:
                     actor.short_circuit_incorrect += 1
                     logger.info(
-                        f'Incorrectly short-circuiting {edge}; '
+                        f'incorrectly short-circuiting {edge}; '
                         + f'num mistakes {actor.short_circuit_incorrect}'
                     )
                 else:
                     actor.short_circuit_correct += 1
                     logger.info(
-                        f'Correctly short-circuiting {edge}; '
+                        f'correctly short-circuiting {edge}; '
                         + f'num correct {actor.short_circuit_correct}'
                     )
                 feedback = {
@@ -1570,6 +1554,25 @@ class LCAActor(GraphActor):
 
         logger.info(f'Leaving start with status {status}')
         return status
+
+
+    def save_clustering_separately(actor, fp):
+        """
+        Save the clustering as a pickled dictionary mapping from annotation id to name id.
+        """
+        if fp is None:
+            return
+        ibs = actor.infr.ibs
+        aids = actor.infr.aids
+        nids = ibs.get_annot_nids(aids)
+        num_nids = len(set(nids))
+        aids_to_nids = {a: n for a, n in zip(aids, nids)}
+        ut.save_cPkl(fp, aids_to_nids)
+        logger.info(
+            f'Saved mapping of {len(aids)} annot ids (aids) to {num_nids} '
+            + f' name ids / nids to {fp} '
+        )
+
 
     def main_gen(actor):
         assert actor.infr is not None
@@ -1759,9 +1762,10 @@ class LCAActor(GraphActor):
 
         '''
         6.  After committing the changes, save the current association between
-            aids and nids as "ground truth" clustering
+            aids and nids outside the wbia database.
         '''
-        actor._save_clustering_as_simulation_gt()
+        fp = actor.config.get('clustering_result_filepath', None)
+        actor.save_clustering_separately(fp)
 
         #  7.  Done!
         actor.phase = 4
