@@ -100,19 +100,30 @@ def filter_for_uniqueness(ibs):
 
 base_dir = os.path.dirname(OVERALL_CONFIG_FILE)
 species = 'zebra_grevys'
-verifier_gt_name = 'lca_verifier_calib_' + species + '.pkl'
-clustering_result_name = 'lca_clustering_results' + species + '.pkl'
+verifier_calib_name = 'lca_verifier_calib_' + species + '.pkl'
+clustering_result_name = 'lca_clustering_results_' + species + '.pkl'
 
 OVERALL_CONFIG = {
     'species': species,
     'ranker': 'hotspotter',
     'verifier': 'vamp',
-    'verifier_gt_filepath': os.path.join(base_dir, verifier_gt_name),
+    'verifier_calib_filepath': os.path.join(base_dir, verifier_calib_name),
     'clustering_result_filepath': os.path.join(base_dir, clustering_result_name),
     'run_on_all_names': False,
     'use_short_circuiting': False,
     'use_simulated_human_reviews': False,
 }
+
+#  If there is a file containing accepted ground truth for this species then
+#  set this next variable to True; otherwise set it to False
+is_there_clustering_gt = True
+if is_there_clustering_gt:
+    clustering_gt_name = 'lca_clustering_gt_' + species + '.pkl'
+    OVERALL_CONFIG['clustering_gt_filepath'] = (
+        os.path.join(base_dir, clustering_gt_name),
+    )
+else:
+    OVERALL_CONFIG['clustering_gt_filepath'] = None
 
 
 def write_overall_config():
@@ -211,8 +222,8 @@ def run_lca(
 
     a. Run ranking and LCA to get to a place in the experiments on
        your annotations just before you'd like to start the simulation.
-       Specifically, suppose the annotations you'd like to run queries
-       during a simulation are in a list called qaids.  Ten you should
+       Specifically, suppose the annotations you'd like to run queries for
+       during a simulation are in a list called qaids.  Then you should
        pause computation just after running ranking on the qaids against
        the daids you'd like to target.
 
@@ -227,21 +238,71 @@ def run_lca(
        that the file named in
               OVERALL_CONFIG['clustering_result_filepath']
        is succcessfully created by the _plugin. It will contain the
-       clustering results that you will compare againts.
+       clustering results that you will compare against.  The results are
+       saved as a pickled dictionary mapping from aid to nid --- aids with
+       the same nid are in the same cluster.
 
     d. Gather whatever statistics you need on the results for comparison
-       and then exit the ipython shell.
+       and then exit the ipython shell.  The focus here should be on human
+       review statistics and other things you might want to remember aside
+       from the actual clustering.
 
     e. Restore the manually-copied databases and start the ipython shell,
        and change whatever you wish to change in the configuration (such
-       as using short-circuitingg).
+       as using short-circuiting).
 
     f. Using the exact same set of aids (union of the qaids and daids
        from setp a), call run_lca, but this time with
-          OVERALL_CONFIG['use_simulated_human_reviews'] set to True
+            OVERALL_CONFIG['use_simulated_human_reviews'] set to True
+       and with
+            OVERALL_CONFIG['clustering_gt_filepath'] set to what was
+       saved as
+            OVERALL_CONFIG['clustering_result_filepath']
+       In addition, create a new file name for
+            OVERALL_CONFIG['clustering_result_filepath']
+       to store new clusering results.
 
-    g. Gather statistics for comparison
+    g. Repeat steps e through f as needed.  Importantly, set a new value for
+            OVERALL_CONFIG['clustering_result_filepath']
+       every time you run a different configuration and want a different
+       set of results.
 
-    h. Repeat steps e through g as needed.
+    h. Gather and save statistids on reviews, etc.  The most important
+       statistics are on the number of short-circuited reviews.  You can see
+       this in the LCAActor (in _plugin.py) method called _attempt_short_circuit_review
+       It prints the incremental statistics to the log file.  Remember that the
+       log file is continually added to, so if you don't gather results (or make a copy)
+       before restarting, you'll get results from multiple runs.
+
+
+6. Changes to the preceeding simulation steps if you've already run to completion
+
+    a. Decide on your qaids and daids as above.
+
+    b. Make sure there is a file whose name is stored as
+              OVERALL_CONFIG['clustering_gt_filepath']
+       as in 5f. If there is no ground truth file, then using the union of the qaids
+       and daids (call it just aids) type:
+              nids = ibs.get_annot_nids(aids)
+              aids_to_nids = {a: n for a, n in zip(aids, nids)}
+              ut.save_cPkl(fp, aids_to_nids)
+       where fp is the desired filepath to the clustering ground truth.  (I've done
+       this on 2023-07-13)
+
+    c. Make a backup copy of the database as in step 5b, but this stores the
+       completed state of LCA rather than the preliminary state.
+
+    d. Remove all edges and reviews between any aids in qaids and any in daids.
+       If qaids == daids this will be all edges and reviews.
+
+    e. Run ranking on the qaids against the daids as in 5a.
+
+    f. Make a backup copy of this "initial" database as in step 5b.  You will now
+       have two database copies, one is initial and one is, essentially, final.
+
+    g. Continue with steps 5d through 5h.
+
+   When you are done with experiments, restore the database you saved in 6c to
+   return to "real" results
 
 """
