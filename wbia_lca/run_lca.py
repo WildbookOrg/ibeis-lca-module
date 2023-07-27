@@ -141,9 +141,9 @@ def write_overall_config():
 
 """
 
-
-def run_ranking(ibs, daids, qaids=None, run_qaids_against_themselves=True):
+def run_ranking(ibs, daids, qaids=None, run_qaids_against_themselves=True, return_ranking=True):
     from wbia_lca._plugin import LCAActor
+    from collections import defaultdict
 
     write_overall_config()
 
@@ -158,6 +158,23 @@ def run_ranking(ibs, daids, qaids=None, run_qaids_against_themselves=True):
 
     actor = LCAActor()
     actor.run_ranker_lnbnn(daids, ibs.dbdir, qaids)
+
+    ranking_results = None
+    
+    if return_ranking:
+        # re-initialize infer object
+        actor._init_infr(daids, ibs.dbdir)
+        # ibs = actor.infr.ibs
+        rowids = ibs.get_review_rowids_between(daids)
+        aid_pairs = ibs.get_review_aid_tuple(rowids)
+        match_probs = actor._candidate_edge_probs(list(aid_pairs))
+
+        ranking_results = defaultdict(list)  
+        for (a1, a2), p in zip(list(aid_pairs), match_probs):
+            ranking_results[a1].append((a2, p))
+            ranking_results[a2].append((a1, p))
+    
+    return ranking_results
 
 
 """ ======================================================
@@ -293,7 +310,9 @@ def run_lca(
        completed state of LCA rather than the preliminary state.
 
     d. Remove all edges and reviews between any aids in qaids and any in daids.
-       If qaids == daids this will be all edges and reviews.
+       If qaids == daids this will be all edges and reviews. Remove all names as well, like so:
+                nids = ibs.get_annot_nids(aids)
+                ibs.delete_names(nids)
 
     e. Run ranking on the qaids against the daids as in 5a.
 
